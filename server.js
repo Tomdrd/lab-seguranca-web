@@ -3,11 +3,15 @@ const Database = require('better-sqlite3');
 const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+const JWT_SECRET = 'chave-secreta-apenas-para-demo-didatica'; // em produção: variável de ambiente
 
 // ---------- Banco de dados (SQL Injection) ----------
 const db = new Database(':memory:');
@@ -96,7 +100,6 @@ app.get('/api/csrf/conta', (req, res) => {
   res.json({ email: sessao ? sessao.email : null });
 });
 
-// VULNERÁVEL: GET muda dado e não checa de onde veio o pedido
 app.get('/vulneravel/trocar-email', (req, res) => {
   const sessao = sessoesCSRF.get(req.cookies.sessaoCSRF);
   if (!sessao) return res.status(401).send('Não logado. Volte e faça login na demo de CSRF.');
@@ -106,7 +109,6 @@ app.get('/vulneravel/trocar-email', (req, res) => {
   res.send(`<p>E-mail alterado para <strong>${sessao.email}</strong>.</p><p><a href="/csrf/conta-vulneravel.html">Voltar</a></p>`);
 });
 
-// SEGURO: só aceita POST + exige o token que só a página legítima conhece
 app.post('/seguro/trocar-email', (req, res) => {
   const sessao = sessoesCSRF.get(req.cookies.sessaoCSRF);
   if (!sessao) return res.status(401).json({ ok: false, mensagem: 'Não logado' });
@@ -117,6 +119,70 @@ app.post('/seguro/trocar-email', (req, res) => {
   sessao.email = req.body.novoEmail;
   console.log('[CSRF SEGURO] E-mail trocado com sucesso (token válido):', sessao.email);
   res.json({ ok: true, mensagem: 'E-mail alterado para ' + sessao.email });
+});
+
+// ================= FORÇA BRUTA =================
+// VULNERÁVEL: sem limite de tentativas
+app.post('/vulneravel-forca-bruta/login', (req, res) => {
+  const { email, senha } = req.body;
+  const user = db.prepare('SELECT * FROM users WHERE email = ? AND senha = ?').get(email, senha);
+  console.log(`[FORÇA BRUTA - VULNERÁVEL] Tentativa: ${email} / ${senha} -> ${user ? 'SUCESSO' : 'falhou'}`);
+  if (user) return res.json({ ok: true, mensagem: `Login OK: ${user.email}` });
+  res.status(401).json({ ok: false, mensagem: 'Credenciais inválidas' });
+});
+
+// Limitador: no máximo 3 tentativas a cada 1 minuto por IP
+const limitadorLogin = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, mensagem: 'Muitas tentativas. Tente novamente em instantes.' },
+  handler: (req, res, next, options) => {
+    console.log(`[FORÇA BRUTA - SEGURO] BLOQUEADO por excesso de tentativas: ${req.body?.email}`);
+    res.status(options.statusCode).json(options.message);
+  }
+});
+
+// SEGURO: com limite de tentativas
+app.post('/seguro-forca-bruta/login', limitadorLogin, (req, res) => {
+  const { email, senha } = req.body;
+  const user = db.prepare('SELECT * FROM users WHERE email = ? AND senha = ?').get(email, senha);
+  console.log(`[FORÇA BRUTA - SEGURO] Tentativa: ${email} / ${senha} -> ${user ? 'SUCESSO' : 'falhou'}`);
+  if (user) return res.json({ ok: true, mensagem: `Login OK: ${user.email}` });
+  res.status(401).json({ ok: false, mensagem: 'Credenciais inválidas' });
+});
+
+// ================= JWT =================
+app.post('/api/jwt/login', (req, res) => {
+  const { email, senha } = req.body;
+  const user = db.prepare('SELECT * FROM users WHERE email = ? AND senha = ?').get(email, senha);
+  if (!user) return res.status(401).json({ ok: false, mensagem: 'Credenciais inválidas' });
+  const token = jwt.sign({ email: user.email, perfil: user.perfil }, JWT_SECRET, { expiresIn: '15m' });
+  console.log('[JWT] Token emitido para', user.email);
+  res.json({ ok: true, token });
+});
+
+function verificarToken(req, res, next) {
+  const authHeader = req.headers.authorization; // "Bearer xxxxx"
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    console.log('[JWT] Pedido SEM token recusado');
+    return res.status(401).json({ ok: false, mensagem: 'Token ausente' });
+  }
+  jwt.verify(token, JWT_SECRET, (err, payload) => {
+    if (err) {
+      console.log('[JWT] Token inválido/expirado recusado');
+      return res.status(401).json({ ok: false, mensagem: 'Token inválido ou expirado' });
+    }
+    req.usuario = payload;
+    next();
+  });
+}
+
+app.get('/api/perfil', verificarToken, (req, res) => {
+  console.log('[JWT] Acesso autorizado a /api/perfil para', req.usuario.email);
+  res.json({ ok: true, email: req.usuario.email, perfil: req.usuario.perfil });
 });
 
 app.listen(3000, () => console.log('Laboratório rodando em http://localhost:3000'));
