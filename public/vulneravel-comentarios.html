@@ -1,43 +1,82 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>Comentários - VULNERÁVEL</title>
-<style>
- body { font-family: sans-serif; max-width: 500px; margin: 50px auto; }
- textarea, button { width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; }
- button { background: #f97316; color: white; border: none; cursor: pointer; }
- #lista { margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; }
- .comentario { padding: 8px; border-bottom: 1px solid #eee; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comentários - VULNERÁVEL</title>
+  <link rel="stylesheet" href="/styles/theme.css">
+  <link rel="stylesheet" href="/styles/comentarios.css">
 </head>
 <body>
-<h2>Comentários (versão VULNERÁVEL)</h2>
-<textarea id="texto" rows="3" placeholder="Escreva um comentário..."></textarea>
-<button onclick="enviar()">Publicar</button>
-<div id="lista"></div>
 
-<script>
-async function carregar() {
-  const r = await fetch('/api/comentarios');
-  const comentarios = await r.json();
-  const lista = document.getElementById('lista');
-  // PERIGO: innerHTML interpreta o comentário como HTML/JS de verdade
-  lista.innerHTML = comentarios.map(c => `<div class="comentario">${c}</div>`).join('');
-}
+  <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+    <i data-lucide="moon" id="themeIcon"></i>
+    <span id="themeLabel">Claro</span>
+  </button>
 
-async function enviar() {
-  const texto = document.getElementById('texto').value;
-  await fetch('/api/comentarios', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ texto })
-  });
-  document.getElementById('texto').value = '';
-  carregar();
-}
+  <div class="container narrow">
 
-carregar();
-</script>
+    <a class="back-link" href="/"><i data-lucide="arrow-left"></i> Voltar ao laboratório</a>
+
+    <header class="header">
+      <div class="badge">
+        <i data-lucide="triangle-alert"></i>
+        XSS · versão vulnerável
+      </div>
+      <h1>Comentários <span class="glow">VULNERÁVEL</span></h1>
+      <p>innerHTML (interpreta HTML/JS)</p>
+    </header>
+
+    <div class="login-panel">
+      <div class="field">
+        <label for="texto">Novo comentário</label>
+        <textarea id="texto" rows="3" placeholder="Escreva um comentário..."></textarea>
+      </div>
+
+      <div class="btn-group single">
+        <button class="btn btn-red btn-full" onclick="enviar()">
+          <span>Publicar</span>
+          <span class="btn-label">sem sanitização</span>
+        </button>
+      </div>
+
+      <div class="hint-box">
+        <i data-lucide="lightbulb"></i>
+        <div>
+          <strong>Dica de ataque</strong>
+          Comente <code>&lt;img src=x onerror="alert('XSS')"&gt;</code> e recarregue. O script roda para qualquer um que abrir a página.
+        </div>
+      </div>
+
+      <p class="lista-titulo">Comentários publicados</p>
+      <div id="lista"></div>
+    </div>
+
+  </div>
+
+  <script src="/scripts/lucide.min.js"></script>
+  <script src="/scripts/theme.js"></script>
+  <script>
+    async function carregar() {
+      const r = await fetch('/api/comentarios');
+      const comentarios = await r.json();
+      const lista = document.getElementById('lista');
+      // PERIGO: innerHTML interpreta o comentário como HTML/JS de verdade
+      lista.innerHTML = comentarios.map(c => `<div class="comentario">${c}</div>`).join('');
+    }
+
+    async function enviar() {
+      const texto = document.getElementById('texto').value;
+      await fetch('/api/comentarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto })
+      });
+      document.getElementById('texto').value = '';
+      carregar();
+    }
+
+    carregar();
+  </script>
 </body>
 </html>

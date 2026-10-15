@@ -1,22 +1,61 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>Comentários - SEGURO</title>
-<style>
- body { font-family: sans-serif; max-width: 500px; margin: 50px auto; }
- textarea, button { width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; }
- button { background: #16a34a; color: white; border: none; cursor: pointer; }
- #lista { margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; }
- .comentario { padding: 8px; border-bottom: 1px solid #eee; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comentários - SEGURA</title>
+  <link rel="stylesheet" href="/styles/theme.css">
+  <link rel="stylesheet" href="/styles/comentarios.css">
 </head>
 <body>
-<h2>Comentários (versão SEGURA)</h2>
-<textarea id="texto" rows="3" placeholder="Escreva um comentário..."></textarea>
-<button id="btnEnviar">Publicar</button>
-<div id="lista"></div>
 
-<script src="/scripts/seguro-comentarios.js"></script>
+  <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+    <i data-lucide="moon" id="themeIcon"></i>
+    <span id="themeLabel">Claro</span>
+  </button>
+
+  <div class="container narrow">
+
+    <a class="back-link" href="/"><i data-lucide="arrow-left"></i> Voltar ao laboratório</a>
+
+    <header class="header">
+      <div class="badge">
+        <i data-lucide="shield-check"></i>
+        XSS · versão segura
+      </div>
+      <h1>Comentários <span class="glow">SEGURA</span></h1>
+      <p>textContent + CSP</p>
+    </header>
+
+    <div class="login-panel">
+      <div class="field">
+        <label for="texto">Novo comentário</label>
+        <textarea id="texto" rows="3" placeholder="Escreva um comentário..."></textarea>
+      </div>
+
+      <div class="btn-group single">
+        <button class="btn btn-green btn-full" id="btnEnviar">
+          <span>Publicar</span>
+          <span class="btn-label">textContent + CSP</span>
+        </button>
+      </div>
+
+      <div class="hint-box">
+        <i data-lucide="lightbulb"></i>
+        <div>
+          <strong>Dica de ataque</strong>
+          Comente <code>&lt;img src=x onerror="alert('XSS')"&gt;</code>. Na versão vulnerável o navegador executa o script; nesta página, ele aparece como texto.
+        </div>
+      </div>
+
+      <p class="lista-titulo">Comentários publicados</p>
+      <div id="lista"></div>
+    </div>
+
+  </div>
+
+  <script src="/scripts/lucide.min.js"></script>
+  <script src="/scripts/theme.js"></script>
+  <script src="/scripts/seguro-comentarios.js"></script>
 </body>
 </html>
