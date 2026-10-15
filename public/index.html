@@ -8,6 +8,7 @@
     input, button { width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; }
     button { background: #f97316; color: white; border: none; cursor: pointer; }
     #resultado { margin-top: 15px; font-weight: bold; }
+    .nav { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 15px; }
   </style>
 </head>
 <body>
@@ -17,6 +18,11 @@
   <button onclick="entrar('vulneravel')">Entrar (versão VULNERÁVEL)</button>
   <button onclick="entrar('seguro')" style="background:#16a34a">Entrar (versão SEGURA)</button>
   <div id="resultado"></div>
+
+  <div class="nav">
+    <p><a href="/vulneravel-comentarios.html">→ Demo de Comentários (XSS) - VULNERÁVEL</a></p>
+    <p><a href="/seguro-comentarios.html">→ Demo de Comentários (XSS) - SEGURA</a></p>
+  </div>
 
   <script>
     async function entrar(versao) {
