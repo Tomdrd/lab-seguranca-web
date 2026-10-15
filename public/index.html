@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab de Segurança Web</title>
+  <style>
+    body { font-family: sans-serif; max-width: 420px; margin: 50px auto; }
+    input, button { width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; }
+    button { background: #f97316; color: white; border: none; cursor: pointer; }
+    #resultado { margin-top: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Login</h2>
+  <input id="email" placeholder="E-mail">
+  <input id="senha" type="password" placeholder="Senha">
+  <button onclick="entrar('vulneravel')">Entrar (versão VULNERÁVEL)</button>
+  <button onclick="entrar('seguro')" style="background:#16a34a">Entrar (versão SEGURA)</button>
+  <div id="resultado"></div>
+
+  <script>
+    async function entrar(versao) {
+      const r = await fetch(`/${versao}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('email').value,
+          senha: document.getElementById('senha').value
+        })
+      });
+      const dados = await r.json();
+      document.getElementById('resultado').textContent = dados.mensagem;
+    }
+  </script>
+</body>
+</html>
