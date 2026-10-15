@@ -1,4 +1,6 @@
 /* Design system compartilhado — Lab de Segurança Web (tema escuro/claro, WCAG, escala p/ telão) */
+
+/* ══════════════════════════════════════════════════════
    TOKENS — DARK  (todos os pares testados ≥ 4.5:1 AA)
 ══════════════════════════════════════════════════════ */
 :root,
@@ -400,3 +402,23 @@ body::before {
 }
 
 .btn, .tag, .field input, .theme-toggle { transition-duration: .2s; }
+
+/* ══════════════════════════════
+   LINK DE VOLTAR (páginas internas)
+══════════════════════════════ */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  color: var(--muted);
+  font-size: .7rem;
+  text-decoration: none;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+.back-link:hover { color: var(--accent); }
+.back-link svg { width: .85rem; height: .85rem; }
+
+/* Página interna de demo: coluna única centralizada */
+.container.narrow { max-width: 40rem; }

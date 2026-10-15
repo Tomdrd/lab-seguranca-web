@@ -18,6 +18,10 @@ function toggleTheme() {
   applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 }
 
+/* Botão de tema (sem onclick inline: as páginas seguras têm CSP script-src 'self') */
+const themeBtn = document.getElementById('themeBtn');
+if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+
 /* Restaurar preferência salva ou preferência do SO */
 (function () {
   const saved = localStorage.getItem('theme');
