@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Minha Conta - VULNERÁVEL</title>
+<style>
+ body { font-family: sans-serif; max-width: 420px; margin: 50px auto; }
+ input, button { width:100%; padding:10px; margin:6px 0; box-sizing:border-box; }
+ button { background:#f97316; color:#fff; border:none; cursor:pointer; }
+</style>
+</head>
+<body>
+<h2>Minha Conta (versão VULNERÁVEL)</h2>
+<p>E-mail atual: <strong id="email">carregando...</strong></p>
+<p>Trocar e-mail (usa GET, sem proteção):</p>
+<input id="novoEmail" placeholder="novo@email.com">
+<button onclick="trocar()">Trocar e-mail</button>
+<p><a href="/csrf/login.html">← voltar</a></p>
+<script>
+async function carregar() {
+  const r = await fetch('/api/csrf/conta');
+  const d = await r.json();
+  document.getElementById('email').textContent = d.email || '(não logado)';
+}
+function trocar() {
+  const novo = document.getElementById('novoEmail').value;
+  window.location = '/vulneravel/trocar-email?novoEmail=' + encodeURIComponent(novo);
+}
+carregar();
+</script>
+</body>
+</html>

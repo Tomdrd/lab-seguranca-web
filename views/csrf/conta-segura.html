@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Minha Conta - SEGURA</title>
+<style>
+ body { font-family: sans-serif; max-width: 420px; margin: 50px auto; }
+ input, button { width:100%; padding:10px; margin:6px 0; box-sizing:border-box; }
+ button { background:#16a34a; color:#fff; border:none; cursor:pointer; }
+</style>
+</head>
+<body data-token="{{CSRF_TOKEN}}">
+<h2>Minha Conta (versão SEGURA)</h2>
+<p>E-mail atual: <strong id="email">carregando...</strong></p>
+<p>Trocar e-mail (usa POST + token CSRF):</p>
+<input id="novoEmail" placeholder="novo@email.com">
+<button id="btnTrocar">Trocar e-mail</button>
+<p id="msg"></p>
+<p><a href="/csrf/login.html">← voltar</a></p>
+<script src="/scripts/csrf-conta-segura.js"></script>
+</body>
+</html>
