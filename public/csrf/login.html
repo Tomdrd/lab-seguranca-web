@@ -1,28 +1,67 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>CSRF - Login</title>
-<style>
- body { font-family: sans-serif; max-width: 420px; margin: 50px auto; }
- button { width:100%; padding:12px; background:#f97316; color:#fff; border:none; cursor:pointer; margin-top:10px; }
- p { color:#444; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSRF - Login</title>
+  <link rel="stylesheet" href="/styles/theme.css">
+  <link rel="stylesheet" href="/styles/demos.css">
 </head>
 <body>
-<h2>Demo CSRF - Login</h2>
-<p>Clique para simular que você já está logado no sistema (como <strong>tom@empresa.com</strong>). Isso cria uma sessão de verdade, com cookie.</p>
-<button onclick="login()">Entrar</button>
-<p id="status"></p>
-<hr>
-<p><a href="/csrf/conta-vulneravel.html">→ Minha Conta (versão VULNERÁVEL)</a></p>
-<p><a href="/csrf/conta-segura.html">→ Minha Conta (versão SEGURA)</a></p>
-<script>
-async function login() {
-  const r = await fetch('/csrf/login', { method: 'POST' });
-  const d = await r.json();
-  document.getElementById('status').textContent = d.ok ? 'Logado! Agora acesse "Minha Conta".' : 'Erro ao logar';
-}
-</script>
+
+  <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+    <i data-lucide="moon" id="themeIcon"></i>
+    <span id="themeLabel">Claro</span>
+  </button>
+
+  <div class="container narrow">
+
+    <a class="back-link" href="/"><i data-lucide="arrow-left"></i> Voltar ao laboratório</a>
+
+    <header class="header">
+      <div class="badge">
+        <i data-lucide="user-round-check"></i>
+        CSRF · sessão com cookie
+      </div>
+      <h1>Demo <span class="glow">CSRF</span></h1>
+      <p>Crie uma sessão e compare a troca de e-mail com e sem proteção.</p>
+    </header>
+
+    <div class="login-panel">
+      <p class="alvo">Clique para simular que você já está logado como <strong>tom@empresa.com</strong>. Isso cria uma sessão de verdade, com cookie.</p>
+
+      <div class="btn-group single">
+        <button class="btn btn-green" onclick="login()">
+          <span>Entrar</span>
+          <span class="btn-label">POST /csrf/login</span>
+        </button>
+      </div>
+
+      <div id="status" class="log-box baixo" role="status" aria-live="polite" data-vazio="Ainda não logado."></div>
+
+      <p class="rotulo">Depois de logar, abra a conta</p>
+      <div class="btn-group">
+        <a class="btn btn-red" href="/csrf/conta-vulneravel.html">
+          <span>⚠ Minha Conta</span>
+          <span class="btn-label">versão vulnerável</span>
+        </a>
+        <a class="btn btn-green" href="/csrf/conta-segura.html">
+          <span>✓ Minha Conta</span>
+          <span class="btn-label">versão segura</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/scripts/lucide.min.js"></script>
+  <script src="/scripts/theme.js"></script>
+  <script>
+    async function login() {
+      const r = await fetch('/csrf/login', { method: 'POST' });
+      const d = await r.json();
+      document.getElementById('status').textContent = d.ok ? 'Logado! Agora acesse "Minha Conta".' : 'Erro ao logar';
+    }
+  </script>
 </body>
 </html>

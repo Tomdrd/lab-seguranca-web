@@ -1,22 +1,62 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>Minha Conta - SEGURA</title>
-<style>
- body { font-family: sans-serif; max-width: 420px; margin: 50px auto; }
- input, button { width:100%; padding:10px; margin:6px 0; box-sizing:border-box; }
- button { background:#16a34a; color:#fff; border:none; cursor:pointer; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Conta - SEGURA</title>
+  <link rel="stylesheet" href="/styles/theme.css">
+  <link rel="stylesheet" href="/styles/demos.css">
 </head>
 <body data-token="{{CSRF_TOKEN}}">
-<h2>Minha Conta (versão SEGURA)</h2>
-<p>E-mail atual: <strong id="email">carregando...</strong></p>
-<p>Trocar e-mail (usa POST + token CSRF):</p>
-<input id="novoEmail" placeholder="novo@email.com">
-<button id="btnTrocar">Trocar e-mail</button>
-<p id="msg"></p>
-<p><a href="/csrf/login.html">← voltar</a></p>
-<script src="/scripts/csrf-conta-segura.js"></script>
+
+  <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+    <i data-lucide="moon" id="themeIcon"></i>
+    <span id="themeLabel">Claro</span>
+  </button>
+
+  <div class="container narrow">
+
+    <a class="back-link" href="/csrf/login.html"><i data-lucide="arrow-left"></i> Voltar</a>
+
+    <header class="header">
+      <div class="badge">
+        <i data-lucide="shield-check"></i>
+        CSRF · versão segura
+      </div>
+      <h1>Minha Conta <span class="glow">SEGURA</span></h1>
+      <p>Troca de e-mail via POST com token CSRF.</p>
+    </header>
+
+    <div class="login-panel">
+      <p class="alvo">E-mail atual: <strong id="email">carregando...</strong></p>
+
+      <div class="field">
+        <label for="novoEmail">Novo e-mail</label>
+        <input id="novoEmail" placeholder="novo@email.com">
+      </div>
+
+      <div class="btn-group single">
+        <button class="btn btn-green" id="btnTrocar">
+          <span>Trocar e-mail</span>
+          <span class="btn-label">POST + token CSRF</span>
+        </button>
+      </div>
+
+      <div id="msg" class="log-box baixo" role="status" aria-live="polite" data-vazio="Nenhuma alteração ainda."></div>
+
+      <div class="hint-box">
+        <i data-lucide="lightbulb"></i>
+        <div>
+          <strong>Por que o ataque falha</strong>
+          A troca exige POST com um token que só esta página conhece. O site malicioso não consegue obtê-lo, então o servidor recusa.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/scripts/lucide.min.js"></script>
+  <script src="/scripts/theme.js"></script>
+  <script src="/scripts/csrf-conta-segura.js"></script>
 </body>
 </html>

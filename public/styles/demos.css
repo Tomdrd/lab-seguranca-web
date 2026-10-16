@@ -30,3 +30,5 @@
   color: var(--muted);
   margin: 1.3rem 0 .1rem;
 }
+
+a.btn { text-decoration: none; }

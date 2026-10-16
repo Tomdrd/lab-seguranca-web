@@ -99,17 +99,22 @@ Todas as cores de texto e interações foram calibradas para atender estritament
 
 ---
 
-## 4. Próximos Passos Sugeridos para Outras IAs / Desenvolvedores
+## 4. Estado atual do redesign
 
-Caso vá dar continuidade ao projeto estilizando as demais páginas:
+Todas as páginas do laboratório usam o mesmo Design System.
 
-1. **Páginas a padronizar com este mesmo Design System:**
-   - [`public/vulneravel-comentarios.html`](file:///home/tom/lab-seguranca-web/public/vulneravel-comentarios.html) e [`views/seguro-comentarios.html`](file:///home/tom/lab-seguranca-web/views/seguro-comentarios.html) (Demonstração XSS).
-   - [`public/forca-bruta.html`](file:///home/tom/lab-seguranca-web/public/forca-bruta.html) (Demonstração de Rate Limiting).
-   - [`public/jwt.html`](file:///home/tom/lab-seguranca-web/public/jwt.html) (Demonstração de API protegida por Token Bearer).
-   - [`public/csrf/login.html`](file:///home/tom/lab-seguranca-web/public/csrf/login.html), [`public/csrf/conta-vulneravel.html`](file:///home/tom/lab-seguranca-web/public/csrf/conta-vulneravel.html) e [`views/csrf/conta-segura.html`](file:///home/tom/lab-seguranca-web/views/csrf/conta-segura.html).
-2. **Modularização de CSS/JS (Opcional):**
-   - Criar um arquivo compartilhado `public/styles/theme.css` com as variáveis `:root`, `[data-theme="light"]` e os componentes base (botões, cards, tags).
-   - Criar `public/scripts/theme.js` para o script do alternador de tema.
-3. **Resiliência Offline (Recomendado para apresentação):**
-   - Se a sala de aula não tiver conexão com a internet, fazer o download local do script `lucide.min.js` para a pasta `public/scripts/lucide.min.js`, evitando dependência do CDN `unpkg.com`.
+**Arquivos compartilhados**
+- `public/styles/theme.css`: tokens claro/escuro e componentes base (botões, painel, campos, caixas de resultado, link de voltar).
+- `public/styles/comentarios.css`: componentes da demo de XSS.
+- `public/styles/demos.css`: componentes das demos de força bruta, JWT e CSRF (caixa de log, rótulos).
+- `public/scripts/theme.js`: alternador de tema, ligado por `addEventListener`.
+- `public/scripts/lucide.min.js`: Lucide local (offline), sem dependência de CDN.
+
+**Páginas padronizadas:** `index`, XSS (vulnerável e segura), força bruta, JWT e CSRF (login, conta vulnerável e conta segura). O `ataque-evil.html` tem estilo próprio e independente, porque simula um site externo.
+
+**Regra importante para páginas com CSP.** As rotas `/seguro-comentarios.html` e `/csrf/conta-segura.html` enviam `script-src 'self'` e `default-src 'self'`. Nelas não pode haver:
+- `<style>` ou `style=""` inline (o CSS deve vir de arquivo em `/styles/`);
+- `<script>` inline;
+- atributos `onclick=""` (use `addEventListener`).
+
+Na `views/csrf/conta-segura.html`, o placeholder do token deve aparecer uma única vez, porque o servidor faz `replace` apenas da primeira ocorrência.
