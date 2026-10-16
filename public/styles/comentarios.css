@@ -42,4 +42,3 @@
   color: var(--muted);
   font-size: .75rem;
 }
-.btn-group.single { grid-template-columns: 1fr; }

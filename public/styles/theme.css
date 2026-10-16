@@ -422,3 +422,6 @@ body::before {
 
 /* Página interna de demo: coluna única centralizada */
 .container.narrow { max-width: 40rem; }
+
+/* Grupo de botões com uma única coluna */
+.btn-group.single { grid-template-columns: 1fr; }

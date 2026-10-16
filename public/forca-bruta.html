@@ -1,57 +1,95 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>Força Bruta</title>
-<style>
- body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
- button { padding: 10px 16px; margin: 6px 6px 6px 0; border: none; color: #fff; cursor: pointer; }
- .btn-vul { background:#f97316; }
- .btn-seg { background:#16a34a; }
- #log { background:#111; color:#0f0; font-family:monospace; font-size:0.85rem; padding:15px; margin-top:15px; height:260px; overflow-y:auto; white-space:pre-wrap; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Força Bruta</title>
+  <link rel="stylesheet" href="/styles/theme.css">
+  <link rel="stylesheet" href="/styles/demos.css">
 </head>
 <body>
-<h2>Demo: Ataque de Força Bruta</h2>
-<p>Alvo: <strong>tom@empresa.com</strong> (o navegador vai tentar várias senhas em sequência).</p>
-<button class="btn-vul" onclick="atacar('/vulneravel-forca-bruta/login')">Atacar versão VULNERÁVEL</button>
-<button class="btn-seg" onclick="atacar('/seguro-forca-bruta/login')">Atacar versão SEGURA (com rate limit)</button>
-<div id="log"></div>
-<p><a href="/">← voltar</a></p>
-<script>
-const senhas = ['123123', 'qwerty', 'senha123', '123456', '000000'];
-const log = document.getElementById('log');
 
-function escrever(linha) {
-  log.textContent += linha + '\n';
-  log.scrollTop = log.scrollHeight;
-}
+  <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+    <i data-lucide="moon" id="themeIcon"></i>
+    <span id="themeLabel">Claro</span>
+  </button>
 
-async function atacar(rota) {
-  log.textContent = '';
-  escrever(`Iniciando ataque contra ${rota}...\n`);
-  for (const senha of senhas) {
-    const r = await fetch(rota, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'tom@empresa.com', senha })
-    });
-    const d = await r.json();
-    if (r.status === 429) {
-      escrever(`Tentativa "${senha}" -> BLOQUEADO (429): ${d.mensagem}`);
-      escrever('\nAtaque interrompido pelo rate limiting. A senha correta nem chegou a ser testada!');
-      return;
+  <div class="container narrow">
+
+    <a class="back-link" href="/"><i data-lucide="arrow-left"></i> Voltar ao laboratório</a>
+
+    <header class="header">
+      <div class="badge">
+        <i data-lucide="lock-keyhole"></i>
+        Força bruta · rate limiting
+      </div>
+      <h1>Ataque de <span class="glow">Força Bruta</span></h1>
+      <p>Mesmo alvo, duas rotas: uma sem limite de tentativas e outra com rate limit.</p>
+    </header>
+
+    <div class="login-panel">
+      <p class="alvo">Alvo: <strong>tom@empresa.com</strong> — o navegador tenta várias senhas em sequência.</p>
+
+      <div class="btn-group">
+        <button class="btn btn-red" onclick="atacar('/vulneravel-forca-bruta/login')">
+          <span>⚠ Atacar versão vulnerável</span>
+          <span class="btn-label">sem limite de tentativas</span>
+        </button>
+        <button class="btn btn-green" onclick="atacar('/seguro-forca-bruta/login')">
+          <span>✓ Atacar versão segura</span>
+          <span class="btn-label">rate limit: 3 por minuto</span>
+        </button>
+      </div>
+
+      <div id="log" class="log-box alto" role="log" aria-live="polite" data-vazio="Aguardando ataque…"></div>
+
+      <div class="hint-box">
+        <i data-lucide="lightbulb"></i>
+        <div>
+          <strong>O que observar</strong>
+          Na versão vulnerável a senha é descoberta na 4ª tentativa. Na segura, o rate limit bloqueia a partir da 4ª (HTTP 429) e a senha correta nem chega a ser testada. Aguarde 1 minuto para repetir.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/scripts/lucide.min.js"></script>
+  <script src="/scripts/theme.js"></script>
+  <script>
+    const senhas = ['123123', 'qwerty', 'senha123', '123456', '000000'];
+    const log = document.getElementById('log');
+
+    function escrever(linha) {
+      log.textContent += linha + '\n';
+      log.scrollTop = log.scrollHeight;
     }
-    if (r.status === 200) {
-      escrever(`Tentativa "${senha}" -> SUCESSO! ${d.mensagem}`);
-      escrever('\nSenha descoberta por força bruta.');
-      return;
+
+    async function atacar(rota) {
+      log.textContent = '';
+      escrever(`Iniciando ataque contra ${rota}...\n`);
+      for (const senha of senhas) {
+        const r = await fetch(rota, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'tom@empresa.com', senha })
+        });
+        const d = await r.json();
+        if (r.status === 429) {
+          escrever(`Tentativa "${senha}" -> BLOQUEADO (429): ${d.mensagem}`);
+          escrever('\nAtaque interrompido pelo rate limiting. A senha correta nem chegou a ser testada!');
+          return;
+        }
+        if (r.status === 200) {
+          escrever(`Tentativa "${senha}" -> SUCESSO! ${d.mensagem}`);
+          escrever('\nSenha descoberta por força bruta.');
+          return;
+        }
+        escrever(`Tentativa "${senha}" -> falhou`);
+        await new Promise(res => setTimeout(res, 300));
+      }
+      escrever('\nLista de senhas esgotada, nenhuma funcionou.');
     }
-    escrever(`Tentativa "${senha}" -> falhou`);
-    await new Promise(res => setTimeout(res, 300));
-  }
-  escrever('\nLista de senhas esgotada, nenhuma funcionou.');
-}
-</script>
+  </script>
 </body>
 </html>

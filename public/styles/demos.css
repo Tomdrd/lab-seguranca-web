@@ -1,0 +1,32 @@
+/* Componentes das demos de força bruta e JWT */
+.alvo {
+  font-size: .8rem;
+  color: var(--muted);
+  margin-bottom: .2rem;
+}
+.alvo strong { color: var(--text); }
+
+.log-box {
+  margin-top: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: .6rem;
+  padding: .9rem 1rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: .78rem;
+  line-height: 1.6;
+  color: var(--green);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.log-box.alto { height: 16rem; overflow-y: auto; }
+.log-box.baixo { min-height: 3.2rem; }
+.log-box:empty::before { content: attr(data-vazio); color: var(--muted); }
+
+.rotulo {
+  font-size: .65rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1.3rem 0 .1rem;
+}

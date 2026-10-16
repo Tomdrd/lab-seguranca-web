@@ -1,60 +1,112 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>JWT</title>
-<style>
- body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
- input, button { width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; }
- button { background:#16a34a; color:#fff; border:none; cursor:pointer; }
- pre { background:#111; color:#0f0; padding:15px; overflow-x:auto; font-size:0.8rem; white-space:pre-wrap; word-break: break-all; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT</title>
+  <link rel="stylesheet" href="/styles/theme.css">
+  <link rel="stylesheet" href="/styles/demos.css">
 </head>
 <body>
-<h2>Demo: API protegida com JWT</h2>
-<input id="email" value="tom@empresa.com" placeholder="E-mail">
-<input id="senha" type="password" value="123456" placeholder="Senha">
-<button onclick="login()">Fazer login e obter token</button>
-<p>Token atual:</p>
-<pre id="token">(nenhum ainda)</pre>
 
-<button onclick="acessarSemToken()">Acessar /api/perfil SEM token</button>
-<button onclick="acessarComToken()">Acessar /api/perfil COM token</button>
-<pre id="resultado"></pre>
-<p><a href="/">← voltar</a></p>
-<script>
-let token = null;
+  <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+    <i data-lucide="moon" id="themeIcon"></i>
+    <span id="themeLabel">Claro</span>
+  </button>
 
-async function login() {
-  const email = document.getElementById('email').value;
-  const senha = document.getElementById('senha').value;
-  const r = await fetch('/api/jwt/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, senha })
-  });
-  const d = await r.json();
-  if (d.ok) {
-    token = d.token;
-    document.getElementById('token').textContent = token;
-  } else {
-    document.getElementById('token').textContent = 'Falha no login: ' + d.mensagem;
-  }
-}
+  <div class="container narrow">
 
-async function acessarSemToken() {
-  const r = await fetch('/api/perfil');
-  const d = await r.json();
-  document.getElementById('resultado').textContent = `Status ${r.status}: ${JSON.stringify(d)}`;
-}
+    <a class="back-link" href="/"><i data-lucide="arrow-left"></i> Voltar ao laboratório</a>
 
-async function acessarComToken() {
-  const r = await fetch('/api/perfil', {
-    headers: { Authorization: 'Bearer ' + token }
-  });
-  const d = await r.json();
-  document.getElementById('resultado').textContent = `Status ${r.status}: ${JSON.stringify(d)}`;
-}
-</script>
+    <header class="header">
+      <div class="badge">
+        <i data-lucide="key-round"></i>
+        Autenticação · JWT
+      </div>
+      <h1>API protegida com <span class="glow">JWT</span></h1>
+      <p>Faça login, obtenha o token e compare o acesso com e sem ele.</p>
+    </header>
+
+    <div class="login-panel">
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" value="tom@empresa.com" placeholder="E-mail">
+      </div>
+      <div class="field">
+        <label for="senha">Senha</label>
+        <input id="senha" type="password" value="123456" placeholder="Senha">
+      </div>
+
+      <div class="btn-group single">
+        <button class="btn btn-green" onclick="login()">
+          <span>Fazer login e obter token</span>
+          <span class="btn-label">POST /api/jwt/login</span>
+        </button>
+      </div>
+
+      <p class="rotulo">Token atual</p>
+      <div id="token" class="log-box baixo" data-vazio="(nenhum ainda)"></div>
+
+      <div class="btn-group">
+        <button class="btn btn-red" onclick="acessarSemToken()">
+          <span>⚠ Acessar SEM token</span>
+          <span class="btn-label">GET /api/perfil</span>
+        </button>
+        <button class="btn btn-green" onclick="acessarComToken()">
+          <span>✓ Acessar COM token</span>
+          <span class="btn-label">GET /api/perfil + Bearer</span>
+        </button>
+      </div>
+
+      <p class="rotulo">Resposta</p>
+      <div id="resultado" class="log-box baixo" role="status" aria-live="polite" data-vazio="Aguardando requisição…"></div>
+
+      <div class="hint-box">
+        <i data-lucide="lightbulb"></i>
+        <div>
+          <strong>O que observar</strong>
+          Sem token a API responde 401. Com o token obtido no login, ela devolve o perfil. O token expira em 15 minutos.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/scripts/lucide.min.js"></script>
+  <script src="/scripts/theme.js"></script>
+  <script>
+    let token = null;
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+      const r = await fetch('/api/jwt/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
+      });
+      const d = await r.json();
+      if (d.ok) {
+        token = d.token;
+        document.getElementById('token').textContent = token;
+      } else {
+        document.getElementById('token').textContent = 'Falha no login: ' + d.mensagem;
+      }
+    }
+
+    async function acessarSemToken() {
+      const r = await fetch('/api/perfil');
+      const d = await r.json();
+      document.getElementById('resultado').textContent = `Status ${r.status}: ${JSON.stringify(d)}`;
+    }
+
+    async function acessarComToken() {
+      const r = await fetch('/api/perfil', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const d = await r.json();
+      document.getElementById('resultado').textContent = `Status ${r.status}: ${JSON.stringify(d)}`;
+    }
+  </script>
 </body>
 </html>
