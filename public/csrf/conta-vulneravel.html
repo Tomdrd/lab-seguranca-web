@@ -42,11 +42,19 @@
         </button>
       </div>
 
+      <p class="rotulo">Simular o ataque</p>
+      <div class="btn-group single">
+        <a class="btn btn-red" href="http://localhost:3001/" target="_blank" rel="noopener">
+          <span>Abrir site malicioso</span>
+          <span class="btn-label">ataque-evil.html em outra origem (porta 3001)</span>
+        </a>
+      </div>
+
       <div class="hint-box">
         <i data-lucide="lightbulb"></i>
         <div>
           <strong>Como atacar</strong>
-          Com a sessão ativa, abra <code>ataque-evil.html</code> em outra origem. O formulário escondido dispara um GET para <code>/vulneravel/trocar-email</code> e o navegador envia o cookie junto.
+          Com a sessão ativa, clique em "Abrir site malicioso". O formulário escondido dispara um GET para <code>/vulneravel/trocar-email</code> e o navegador envia o cookie junto.
         </div>
       </div>
     </div>

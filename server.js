@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
+const { paginaCSRF, escaparHtml } = require('./lib/render-csrf');
 
 const app = express();
 app.use(express.json());
@@ -102,11 +103,12 @@ app.get('/api/csrf/conta', (req, res) => {
 
 app.get('/vulneravel/trocar-email', (req, res) => {
   const sessao = sessoesCSRF.get(req.cookies.sessaoCSRF);
-  if (!sessao) return res.status(401).send('Não logado. Volte e faça login na demo de CSRF.');
+  if (!sessao) return res.status(401).send(paginaCSRF('Não logado', '      <p class="alvo">Não há sessão ativa. Volte e faça login na demo de CSRF: <a href="/csrf/login.html">/csrf/login.html</a>.</p>'));
   const antigo = sessao.email;
   sessao.email = req.query.novoEmail;
   console.log(`[CSRF VULNERÁVEL] E-mail trocado de "${antigo}" para "${sessao.email}" — SEM checar a origem do pedido!`);
-  res.send(`<p>E-mail alterado para <strong>${sessao.email}</strong>.</p><p><a href="/csrf/conta-vulneravel.html">Voltar</a></p>`);
+  res.send(paginaCSRF('E-mail alterado', `      <p class="alvo">O e-mail da conta agora é <strong class="perigo">${escaparHtml(sessao.email)}</strong>.</p>
+      <p class="alvo">Ninguém clicou em "Trocar e-mail": o navegador enviou o pedido junto com o cookie de sessão.</p>`));
 });
 
 app.post('/seguro/trocar-email', (req, res) => {
@@ -186,3 +188,9 @@ app.get('/api/perfil', verificarToken, (req, res) => {
 });
 
 app.listen(3000, () => console.log('Laboratório rodando em http://localhost:3000'));
+
+// "Site malicioso" da demo de CSRF: outra porta = outra origem, como um site externo de verdade.
+// Serve somente o ataque-evil.html (que fica fora de public/ de propósito).
+const siteMalicioso = express();
+siteMalicioso.get('/', (req, res) => res.sendFile(__dirname + '/ataque-evil.html'));
+siteMalicioso.listen(3001, () => console.log('Site malicioso (demo CSRF) em http://localhost:3001'));

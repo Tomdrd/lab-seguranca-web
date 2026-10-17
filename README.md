@@ -28,7 +28,7 @@ Acesse: http://localhost:3000
 ### 3. CSRF (Cross-Site Request Forgery)
 - **Vulnerável:** `/vulneravel/trocar-email` aceita `GET` sem checar origem do pedido.
 - **Segura:** `/seguro/trocar-email` só aceita `POST` com token CSRF.
-- **Ataque:** abrir `ataque-evil.html` (fora da pasta `public/`, simula um site externo) enquanto logado em `/csrf/login.html`.
+- **Ataque:** logado em `/csrf/login.html`, abrir a conta vulnerável e clicar em **Abrir site malicioso** (serve o `ataque-evil.html` em `http://localhost:3001`, outra origem, como um site externo). O arquivo fica fora de `public/` de propósito. Também funciona abrindo `ataque-evil.html` direto do disco.
 
 ### 4. Força Bruta
 - **Vulnerável:** `/vulneravel-forca-bruta/login` sem limite de tentativas.

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITULO}}</title>
+  <link rel="stylesheet" href="/styles/theme.css">
+  <link rel="stylesheet" href="/styles/demos.css">
+</head>
+<body>
+
+  <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+    <i data-lucide="moon" id="themeIcon"></i>
+    <span id="themeLabel">Claro</span>
+  </button>
+
+  <div class="container narrow">
+
+    <header class="header">
+      <div class="badge">
+        <i data-lucide="triangle-alert"></i>
+        CSRF · requisição executada
+      </div>
+      <h1>{{TITULO}}</h1>
+    </header>
+
+    <div class="login-panel">
+{{CONTEUDO}}
+      <div class="btn-group single">
+        <a class="btn btn-green" href="/csrf/conta-vulneravel.html">
+          <span>Voltar para Minha Conta</span>
+          <span class="btn-label">conferir o e-mail atual</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/scripts/lucide.min.js"></script>
+  <script src="/scripts/theme.js"></script>
+</body>
+</html>

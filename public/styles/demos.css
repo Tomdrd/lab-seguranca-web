@@ -32,3 +32,4 @@
 }
 
 a.btn { text-decoration: none; }
+.alvo strong.perigo, .perigo { color: var(--red); font-weight: 700; }
