@@ -101,6 +101,10 @@
     }
 
     async function acessarComToken() {
+      if (!token) {
+        document.getElementById('resultado').textContent = 'Faça login primeiro para obter um token.';
+        return;
+      }
       const r = await fetch('/api/perfil', {
         headers: { Authorization: 'Bearer ' + token }
       });

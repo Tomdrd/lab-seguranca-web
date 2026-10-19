@@ -3,18 +3,27 @@ const Database = require('better-sqlite3');
 const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const { paginaCSRF, escaparHtml } = require('./lib/render-csrf');
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.disable('x-powered-by'); // não anunciar a tecnologia do servidor
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
+app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); }); // Express 5: sem corpo => undefined
 
-const JWT_SECRET = 'chave-secreta-apenas-para-demo-didatica'; // em produção: variável de ambiente
+// Segredo do JWT: variável de ambiente; o valor fixo é só para a demo funcionar sem configuração
+const JWT_SECRET = process.env.JWT_SECRET || 'chave-secreta-apenas-para-demo-didatica';
+
+const textoValido = (v, max) => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
+const emailValido = (v) => textoValido(v, 120) && /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(v);
 
 // ---------- Banco de dados (SQL Injection) ----------
+// Senhas em texto puro SÓ porque é demo; em produção: hash lento com salt (bcrypt/Argon2)
 const db = new Database(':memory:');
 db.exec(`
   CREATE TABLE users (
@@ -49,7 +58,7 @@ app.get('/csrf/conta-segura.html', (req, res) => {
   res.send(html);
 });
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public'))); // caminho absoluto: funciona de qualquer pasta
 
 // ================= SQL INJECTION =================
 app.post('/vulneravel/login', (req, res) => {
@@ -67,6 +76,7 @@ app.post('/vulneravel/login', (req, res) => {
 
 app.post('/seguro/login', (req, res) => {
   const { email, senha } = req.body;
+  if (!textoValido(email, 120) || !textoValido(senha, 120)) return res.status(400).json({ ok: false, mensagem: 'Dados inválidos' });
   const query = 'SELECT * FROM users WHERE email = ? AND senha = ?';
   console.log('[SEGURO] Query executada:', query, '| parâmetros:', [email, senha]);
   const user = db.prepare(query).get(email, senha);
@@ -81,7 +91,9 @@ app.get('/api/comentarios', (req, res) => {
 
 app.post('/api/comentarios', (req, res) => {
   const { texto } = req.body;
+  if (!textoValido(texto, 500)) return res.status(400).json({ ok: false, mensagem: 'Comentário inválido (texto de 1 a 500 caracteres)' });
   comentarios.push(texto);
+  if (comentarios.length > 100) comentarios.shift();
   console.log('[COMENTÁRIO] Novo comentário salvo:', texto);
   res.json({ ok: true });
 });
@@ -114,10 +126,14 @@ app.get('/vulneravel/trocar-email', (req, res) => {
 app.post('/seguro/trocar-email', (req, res) => {
   const sessao = sessoesCSRF.get(req.cookies.sessaoCSRF);
   if (!sessao) return res.status(401).json({ ok: false, mensagem: 'Não logado' });
-  if (req.body.csrfToken !== sessao.csrfToken) {
+  const recebido = Buffer.from(String(req.body.csrfToken ?? ''));
+  const esperado = Buffer.from(sessao.csrfToken);
+  const tokenOk = recebido.length === esperado.length && crypto.timingSafeEqual(recebido, esperado);
+  if (!tokenOk) {
     console.log('[CSRF SEGURO] Tentativa BLOQUEADA — token ausente ou inválido. Recebido:', req.body.csrfToken);
     return res.status(403).json({ ok: false, mensagem: 'Bloqueado: token CSRF inválido' });
   }
+  if (!emailValido(req.body.novoEmail)) return res.status(400).json({ ok: false, mensagem: 'E-mail inválido' });
   sessao.email = req.body.novoEmail;
   console.log('[CSRF SEGURO] E-mail trocado com sucesso (token válido):', sessao.email);
   res.json({ ok: true, mensagem: 'E-mail alterado para ' + sessao.email });
@@ -149,6 +165,7 @@ const limitadorLogin = rateLimit({
 // SEGURO: com limite de tentativas
 app.post('/seguro-forca-bruta/login', limitadorLogin, (req, res) => {
   const { email, senha } = req.body;
+  if (!textoValido(email, 120) || !textoValido(senha, 120)) return res.status(400).json({ ok: false, mensagem: 'Dados inválidos' });
   const user = db.prepare('SELECT * FROM users WHERE email = ? AND senha = ?').get(email, senha);
   console.log(`[FORÇA BRUTA - SEGURO] Tentativa: ${email} / ${senha} -> ${user ? 'SUCESSO' : 'falhou'}`);
   if (user) return res.json({ ok: true, mensagem: `Login OK: ${user.email}` });
@@ -158,21 +175,22 @@ app.post('/seguro-forca-bruta/login', limitadorLogin, (req, res) => {
 // ================= JWT =================
 app.post('/api/jwt/login', (req, res) => {
   const { email, senha } = req.body;
+  if (!textoValido(email, 120) || !textoValido(senha, 120)) return res.status(400).json({ ok: false, mensagem: 'Dados inválidos' });
   const user = db.prepare('SELECT * FROM users WHERE email = ? AND senha = ?').get(email, senha);
   if (!user) return res.status(401).json({ ok: false, mensagem: 'Credenciais inválidas' });
-  const token = jwt.sign({ email: user.email, perfil: user.perfil }, JWT_SECRET, { expiresIn: '15m' });
+  const token = jwt.sign({ email: user.email, perfil: user.perfil }, JWT_SECRET, { algorithm: 'HS256', expiresIn: '15m' });
   console.log('[JWT] Token emitido para', user.email);
   res.json({ ok: true, token });
 });
 
 function verificarToken(req, res, next) {
-  const authHeader = req.headers.authorization; // "Bearer xxxxx"
-  const token = authHeader && authHeader.split(' ')[1];
+  const partes = /^Bearer (\S+)$/.exec(req.headers.authorization || ''); // exige o esquema "Bearer xxxxx"
+  const token = partes && partes[1];
   if (!token) {
     console.log('[JWT] Pedido SEM token recusado');
     return res.status(401).json({ ok: false, mensagem: 'Token ausente' });
   }
-  jwt.verify(token, JWT_SECRET, (err, payload) => {
+  jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }, (err, payload) => { // algoritmo fixo: barra 'alg: none'
     if (err) {
       console.log('[JWT] Token inválido/expirado recusado');
       return res.status(401).json({ ok: false, mensagem: 'Token inválido ou expirado' });
@@ -185,6 +203,24 @@ function verificarToken(req, res, next) {
 app.get('/api/perfil', verificarToken, (req, res) => {
   console.log('[JWT] Acesso autorizado a /api/perfil para', req.usuario.email);
   res.json({ ok: true, email: req.usuario.email, perfil: req.usuario.perfil });
+});
+
+// ================= RESET DAS DEMOS (só localhost) =================
+// Útil entre ensaio e apresentação: limpa comentários, sessões e o limite de tentativas.
+app.post('/api/reset', (req, res) => {
+  if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.ip)) return res.status(403).json({ ok: false });
+  comentarios = [];
+  sessoesCSRF.clear();
+  limitadorLogin.resetKey(ipKeyGenerator(req.ip));
+  console.log('[RESET] Demos reiniciadas');
+  res.json({ ok: true });
+});
+
+// Tratamento de erros: nunca devolver stack trace nem caminhos do servidor ao cliente
+app.use((err, req, res, next) => {
+  console.error('[ERRO]', err.message);
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({ ok: false, mensagem: status === 400 ? 'Requisição inválida' : 'Erro interno' });
 });
 
 app.listen(3000, () => console.log('Laboratório rodando em http://localhost:3000'));
