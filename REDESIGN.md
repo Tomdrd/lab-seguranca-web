@@ -118,3 +118,9 @@ Todas as páginas do laboratório usam o mesmo Design System.
 - atributos `onclick=""` (use `addEventListener`).
 
 Na `views/csrf/conta-segura.html`, o placeholder do token deve aparecer uma única vez, porque o servidor faz `replace` apenas da primeira ocorrência.
+
+## 5. Deck de slides e revisão de segurança
+
+- `public/slides.html`, `public/styles/slides.css` e `public/scripts/slides.js`: apresentação integrada às demos (ver README).
+- Revisão do `server.js`: respostas de erro sem stack trace, validação de tipo/tamanho nas rotas seguras, JWT com algoritmo fixo (HS256) e esquema `Bearer`, `timingSafeEqual` na comparação do token CSRF, `X-Powered-By` desligado, `express.static` com caminho absoluto, segredo do JWT por variável de ambiente (`JWT_SECRET`), limite de tamanho do corpo e `POST /api/reset` (localhost).
+- As rotas **vulneráveis** continuam vulneráveis de propósito (SQL Injection, XSS armazenado, CSRF via GET, força bruta sem limite).

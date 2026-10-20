@@ -46,3 +46,11 @@ Node.js, Express, better-sqlite3, cookie-parser, express-rate-limit, jsonwebtoke
 ## Aviso
 
 Laboratório educacional. Todas as "vulnerabilidades" são intencionais, isoladas em `localhost`, para fins de demonstração em sala de aula.
+
+## Apresentação (slides)
+
+Com o servidor rodando, abra **http://localhost:3000/slides.html**.
+
+- Navegação: `→` / `Espaço` avançam (revelando as etapas de cada slide), `←` volta, `Home`/`End`, `F` tela cheia, `T` tema, `R` reinicia as demos. Dá para abrir direto num slide com `#N` (ex.: `/slides.html#8`).
+- As demos de SQL Injection, força bruta e JWT rodam dentro dos slides, chamando as mesmas rotas do laboratório. XSS e CSRF carregam as páginas reais em quadros.
+- `POST /api/reset` (aceito só de localhost) limpa comentários, sessões e o limite de tentativas. É o que o botão e a tecla `R` usam entre um ensaio e a apresentação.
