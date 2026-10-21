@@ -52,5 +52,7 @@ Laboratório educacional. Todas as "vulnerabilidades" são intencionais, isolada
 Com o servidor rodando, abra **http://localhost:3000/slides.html**.
 
 - Navegação: `→` / `Espaço` avançam (revelando as etapas de cada slide), `←` volta, `Home`/`End`, `F` tela cheia, `T` tema, `R` reinicia as demos. Dá para abrir direto num slide com `#N` (ex.: `/slides.html#8`).
-- As demos de SQL Injection, força bruta e JWT rodam dentro dos slides, chamando as mesmas rotas do laboratório. XSS e CSRF carregam as páginas reais em quadros.
+- Todas as demos rodam dentro dos slides, em passos, chamando as mesmas rotas do laboratório (sem abrir abas):
+  - **XSS:** os comentários vão para as duas versões; a vulnerável renderiza num quadro isolado (sandbox) e a segura mostra o texto escapado. A caixa "innerHTML por engano" mostra a CSP bloqueando o `onerror`.
+  - **CSRF:** o botão "A vítima abre o site malicioso" carrega o `ataque-evil.html` da porta 3001 num quadro invisível e o e-mail da conta muda sem nenhum clique. Se a 3001 estiver ocupada, a demo usa um plano B equivalente.
 - `POST /api/reset` (aceito só de localhost) limpa comentários, sessões e o limite de tentativas. É o que o botão e a tecla `R` usam entre um ensaio e a apresentação.

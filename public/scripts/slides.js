@@ -70,9 +70,8 @@
       }
       renderQuery(el, payload, '...');
     },
-    lazyFrames(slide) { // carrega os quadros só quando o slide aparece
-      $$('iframe[data-src]', slide).forEach((f) => { if (!f.src) f.src = f.dataset.src; });
-    },
+    csrfDemo() { csrfRefresh(); },
+    xssDemo() { xssLoad(); },
   };
 
   /* ───────────── SQL Injection ───────────── */
@@ -124,12 +123,156 @@
   $('#sqlSeg').addEventListener('click', () => sqlSend('/seguro/login', '✓ Segura', false));
   updateQuery();
 
-  /* ───────────── XSS: copiar payload ───────────── */
-  $('#copyXss').addEventListener('click', async () => {
-    const txt = $('#xssPayload').textContent;
-    try { await navigator.clipboard.writeText(txt); toast('Payload copiado'); }
-    catch { toast('Selecione e copie manualmente (Ctrl+C)'); }
+  /* ───────────── XSS ao vivo ───────────── */
+  // Os dois painéis mostram a MESMA lista do servidor (/api/comentarios), como as páginas reais.
+  // Cada painel é uma "página da vítima" isolada (sandbox), então o script pode rodar sem afetar os slides.
+  let xssList = [];
+  const paginaVitima = (itens, csp) => `<!doctype html><html><head><meta charset="utf-8">${csp
+    ? '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; script-src \'none\'">' : ''}
+<style>body{margin:0;padding:.7rem;font:14px/1.5 'Courier New',monospace;background:#fff;color:#111}
+.c{border-left:3px solid #0369a1;background:#f1f5f9;padding:.4rem .6rem;margin:0 0 .4rem;border-radius:.3rem;overflow-wrap:anywhere}
+.e{color:#6b7280}</style></head><body>${itens || '<p class="e">Nenhum comentário ainda.</p>'}</body></html>`;
+
+  function renderXss(soSegura = false) {
+    const porEngano = $('#xssInner').checked;
+    // vulnerável: o comentário entra como HTML (innerHTML). segura: entra escapado (textContent).
+    const vul = xssList.map((c) => `<div class="c">${c}</div>`).join('');
+    const seg = xssList.map((c) => `<div class="c">${porEngano ? c : esc(c)}</div>`).join('');
+    if (!soSegura) $('#xssVul').srcdoc = paginaVitima(vul, false); // marcar a caixa não deve repetir o alerta da vulnerável
+    $('#xssSeg').srcdoc = paginaVitima(seg, true);
+    $('#xssSegTitle').textContent = porEngano ? '🛡 Só a CSP protege: innerHTML por engano' : '✓ Segura: textContent + CSP';
+    $('#xssSegCap').textContent = porEngano
+      ? 'O HTML foi interpretado (ícone de imagem quebrada), mas a CSP bloqueou o onerror: nenhum alerta.'
+      : 'O comentário aparece como texto puro. Nada é executado.';
+  }
+  async function xssLoad() {
+    try { xssList = await (await fetch('/api/comentarios')).json(); } catch { xssList = []; }
+    renderXss();
+  }
+  $$('.chip[data-xss]').forEach((c) => c.addEventListener('click', () => { $('#xssText').value = c.dataset.xss; }));
+  $('#xssInner').addEventListener('change', () => renderXss(true));
+  $('#xssPost').addEventListener('click', async () => {
+    try {
+      const r = await post('/api/comentarios', { texto: $('#xssText').value });
+      if (!r.ok) { toast((await r.json()).mensagem || 'Comentário recusado'); return; }
+      await xssLoad();
+    } catch { toast('Servidor indisponível'); }
   });
+  $('#xssAgain').addEventListener('click', resetDemos);
+
+  /* ───────────── CSRF ao vivo ───────────── */
+  const csrfLogEl = $('#csrfLog');
+  const logCsrf = (html) => { csrfLogEl.innerHTML = html; };
+  async function csrfRefresh(flash = false) {
+    try {
+      const r = await fetch('/api/csrf/conta');
+      const d = await r.json();
+      const em = $('#csrfEmail');
+      const logada = Boolean(d.email);
+      $('#csrfSess').className = `statchip ${logada ? 'on' : 'off'}`;
+      $('#csrfSess').textContent = logada ? 'sessão: logada' : 'sessão: não logada';
+      em.textContent = d.email || '—';
+      em.classList.remove('hacked');
+      if (flash && /hacker/.test(d.email || '')) { void em.offsetWidth; em.classList.add('hacked'); }
+      return logada;
+    } catch { return false; }
+  }
+  async function precisaLogin() {
+    if (await csrfRefresh()) return false;
+    logCsrf('<span class="bad">Sem sessão.</span> Clique em <b>1 · Entrar</b> primeiro.');
+    const b = $('#csrfLogin'); b.classList.remove('need'); void b.offsetWidth; b.classList.add('need');
+    return true;
+  }
+  $('#csrfLogin').addEventListener('click', async () => {
+    try {
+      await fetch('/csrf/login', { method: 'POST' });
+      await csrfRefresh();
+      logCsrf('<span class="dim">POST /csrf/login</span>\n<span class="good">Sessão criada.</span> O navegador guardou o cookie <b>sessaoCSRF</b>.');
+    } catch { logCsrf('<span class="bad">Servidor indisponível</span>'); }
+  });
+
+  // O ataque real: carrega o ataque-evil.html (porta 3001 = outra origem) num quadro invisível.
+  // O formulário escondido dele dispara o GET e o navegador anexa o cookie sozinho.
+  // Sucesso = o quadro passou a mostrar a resposta do sistema (origem :3000, então dá para ler a URL).
+  function ataqueReal() {
+    return new Promise((resolve) => {
+      const f = $('#csrfSink');
+      let fim = false;
+      const acabar = (ok) => { if (fim) return; fim = true; clearTimeout(t); f.onload = null; f.removeAttribute('src'); resolve(ok); };
+      const t = setTimeout(() => acabar(false), 3500);
+      f.onload = () => {
+        try { if (f.contentWindow.location.href.includes('/vulneravel/trocar-email')) acabar(true); }
+        catch { /* ainda é o site malicioso (outra origem): aguarda a próxima carga */ }
+      };
+      f.src = `http://localhost:3001/?t=${Date.now()}`;
+    });
+  }
+  // Plano B (porta 3001 ocupada): mesmo ataque, com um formulário escondido enviado para um quadro
+  // invisível criado já com nome (sem nome o navegador abriria uma aba nova).
+  function ataqueLocal() {
+    return new Promise((resolve) => {
+      const fr = document.createElement('iframe');
+      fr.name = 'csrfSinkB'; fr.hidden = true; fr.title = 'Plano B do ataque (segundo plano)';
+      document.body.appendChild(fr);
+      const form = document.createElement('form');
+      form.method = 'GET'; form.action = '/vulneravel/trocar-email'; form.target = 'csrfSinkB'; form.hidden = true;
+      form.innerHTML = '<input type="hidden" name="novoEmail" value="hacker@malvado.com">';
+      document.body.appendChild(form);
+      fr.onload = () => { fr.remove(); form.remove(); resolve(true); };
+      form.submit();
+    });
+  }
+
+  let atacando = false;
+  $('#csrfAtk').addEventListener('click', async () => {
+    if (atacando || (await precisaLogin())) return;
+    atacando = true;
+    const prize = $('#csrfPrize'); prize.classList.remove('run'); void prize.offsetWidth; prize.classList.add('run');
+    logCsrf('<span class="dim">A vítima abriu o site malicioso (porta 3001)…</span>');
+    await sleep(reduce ? 100 : 1500);
+    let ok = await ataqueReal(), via = 'site malicioso em outra origem (porta 3001)';
+    if (!ok) { await ataqueLocal(); via = 'formulário escondido (plano B: porta 3001 indisponível)'; }
+    const logada = await csrfRefresh(true);
+    const mudou = /hacker/.test($('#csrfEmail').textContent);
+    logCsrf(`<span class="dim">via ${esc(via)}</span>\n`
+      + 'GET /vulneravel/trocar-email?novoEmail=hacker@malvado.com\n'
+      + '<span class="dim">Cookie: sessaoCSRF=…  ← anexado sozinho pelo navegador</span>\n'
+      + (mudou ? '<span class="bad">🚨 E-mail trocado. Ninguém clicou em "Trocar e-mail".</span>' : (logada ? 'O e-mail não mudou (tente de novo).' : 'Sessão perdida.')));
+    atacando = false;
+  });
+
+  $('#csrfSegAtk').addEventListener('click', async () => {
+    if (await precisaLogin()) return;
+    try {
+      const r = await post('/seguro/trocar-email', { novoEmail: 'hacker@malvado.com' }); // tem o cookie, mas não o token
+      const d = await r.json();
+      logCsrf('POST /seguro/trocar-email  {"novoEmail":"hacker@malvado.com"}\n'
+        + '<span class="dim">Cookie: sessaoCSRF=…  (o atacante não conhece o token)</span>\n'
+        + `<span class="${r.ok ? 'bad' : 'good'}">${r.ok ? '🚨' : '🛡'} HTTP ${r.status}: ${esc(d.mensagem)}</span>`);
+      await csrfRefresh();
+    } catch { logCsrf('<span class="bad">Servidor indisponível</span>'); }
+  });
+  $('#csrfSegOk').addEventListener('click', async () => {
+    if (await precisaLogin()) return;
+    try {
+      const html = await (await fetch('/csrf/conta-segura.html')).text();
+      const tok = (/data-token="([a-f0-9]+)"/.exec(html) || [])[1];
+      if (!tok) { logCsrf('<span class="bad">Não foi possível obter o token.</span>'); return; }
+      const r = await post('/seguro/trocar-email', { novoEmail: 'novo@empresa.com', csrfToken: tok });
+      const d = await r.json();
+      logCsrf('<span class="dim">A página legítima recebeu o token do servidor e o enviou junto:</span>\n'
+        + `POST /seguro/trocar-email  {"novoEmail":"novo@empresa.com","csrfToken":"${tok.slice(0, 8)}…"}\n`
+        + `<span class="${r.ok ? 'good' : 'bad'}">${r.ok ? '✓' : '✗'} HTTP ${r.status}: ${esc(d.mensagem)}</span>`);
+      await csrfRefresh();
+    } catch { logCsrf('<span class="bad">Servidor indisponível</span>'); }
+  });
+  function csrfReset() {
+    logCsrf('Aguardando ação…');
+    $('#csrfSess').className = 'statchip off'; $('#csrfSess').textContent = 'sessão: não logada';
+    $('#csrfEmail').textContent = '—'; $('#csrfEmail').classList.remove('hacked');
+    $('#csrfPrize').classList.remove('run');
+  }
+  $('#csrfAgain').addEventListener('click', resetDemos);
 
   /* ───────────── Força bruta ───────────── */
   const senhas = ['123123', 'qwerty', 'senha123', '123456', '000000'];
@@ -214,7 +357,8 @@
       const r = await fetch('/api/reset', { method: 'POST' });
       toast(r.ok ? 'Demos reiniciadas' : 'Não foi possível reiniciar');
     } catch { toast('Servidor indisponível'); }
-    $$('iframe').forEach((f) => { if (f.src) f.src = f.src; });
+    csrfReset();
+    await xssLoad();
     ['#bfVulList', '#bfSegList'].forEach((s) => { $(s).innerHTML = ''; });
     jwt = null; renderToken();
     $('#jwtOut').className = 'out'; $('#jwtOut').textContent = 'Aguardando…';
@@ -239,15 +383,6 @@
     else if (k.toLowerCase() === 'r') resetDemos();
   }
   document.addEventListener('keydown', onKey);
-
-  // Os quadros das demos são da mesma origem: repassa as teclas deles ao deck,
-  // para as setas continuarem funcionando depois de clicar dentro de um quadro.
-  function ligarQuadro(f) {
-    const anexar = () => { try { f.contentDocument.addEventListener('keydown', onKey); } catch { /* outra origem */ } };
-    f.addEventListener('load', anexar);
-    anexar();
-  }
-  $$('iframe').forEach(ligarQuadro);
 
   // Depois de clicar com o mouse, tira o foco do botão: a barra de espaço avança o slide
   // em vez de repetir o clique (ex.: "Atacar" disparando de novo).

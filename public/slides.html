@@ -91,18 +91,36 @@
     </section>
 
     <!-- 5 · XSS -->
-    <section class="slide" data-title="XSS ao vivo" data-enter="lazyFrames">
+    <section class="slide" data-title="XSS ao vivo" data-enter="xssDemo">
       <span class="who a">Antonyelton</span>
       <p class="eyebrow fx" style="--i:0">2 · XSS · Demo ao vivo</p>
       <h2 class="fx" style="--i:1"><span class="flow">Cross-Site</span> Scripting</h2>
-      <div class="payload fx" style="--i:2">
-        <code id="xssPayload">&lt;img src=x onerror="alert('XSS')"&gt;</code>
-        <button class="chip" id="copyXss">Copiar payload</button>
-        <span class="muted">Cole nos dois comentários e compare. Recarregue a vulnerável: o ataque fica armazenado.</span>
+      <div class="card xssform fx" style="--i:2">
+        <div>
+          <label for="xssText">Novo comentário (vai para as duas versões)</label>
+          <textarea id="xssText" rows="1" spellcheck="false">&lt;img src=x onerror="alert('XSS')"&gt;</textarea>
+          <div class="chips">
+            <button class="chip" data-xss="&lt;img src=x onerror=&quot;alert('XSS')&quot;&gt;">Payload do alerta</button>
+            <button class="chip" data-xss="Ótimo seminário!">Comentário normal</button>
+            <label class="chk"><input type="checkbox" id="xssInner"> E se alguém usar <code>innerHTML</code> por engano? (CSP ligada)</label>
+          </div>
+        </div>
+        <div class="btns col">
+          <button class="btn btn-green" id="xssPost"><span>Publicar</span></button>
+          <button class="chip" id="xssAgain">↺ Recomeçar a demo</button>
+        </div>
       </div>
-      <div class="frames fx" style="--i:3">
-        <figure><figcaption class="r">⚠ innerHTML (vulnerável)</figcaption><iframe data-src="/vulneravel-comentarios.html" title="Comentários vulnerável"></iframe></figure>
-        <figure><figcaption class="g">✓ textContent + CSP (segura)</figcaption><iframe data-src="/seguro-comentarios.html" title="Comentários segura"></iframe></figure>
+      <div class="two wide fx" style="--i:3">
+        <div class="card panelx bad">
+          <h3>⚠ Vulnerável: innerHTML</h3>
+          <iframe id="xssVul" sandbox="allow-scripts allow-modals" tabindex="-1" title="Comentários da versão vulnerável"></iframe>
+          <p>O navegador interpreta o HTML e executa o script. Recarregue: o ataque fica armazenado.</p>
+        </div>
+        <div class="card panelx good">
+          <h3 id="xssSegTitle">✓ Segura: textContent + CSP</h3>
+          <iframe id="xssSeg" sandbox="allow-scripts allow-modals" tabindex="-1" title="Comentários da versão segura"></iframe>
+          <p id="xssSegCap">O comentário aparece como texto puro. Nada é executado.</p>
+        </div>
       </div>
     </section>
 
@@ -127,20 +145,32 @@
     </section>
 
     <!-- 7 · CSRF DEMO -->
-    <section class="slide" data-title="CSRF ao vivo" data-enter="lazyFrames">
+    <section class="slide" data-title="CSRF ao vivo" data-enter="csrfDemo">
       <span class="who b">Francisco</span>
       <p class="eyebrow fx" style="--i:0">3 · CSRF · Demo ao vivo</p>
       <h2 class="fx" style="--i:1">Troca de e-mail <span class="flow">sem clicar</span></h2>
-      <div class="steps fx" style="--i:2">
-        <span><b>1</b> Entrar <a href="/csrf/login.html" target="_blank" rel="noopener">/csrf/login.html</a></span>
-        <span><b>2</b> Em "Vulnerável", clique em <i>Abrir site malicioso</i></span>
-        <span><b>3</b> Recarregue a conta: e-mail trocado</span>
-        <span><b>4</b> Em "Segura", troque com o token</span>
+      <div class="two wide">
+        <div class="card fx" style="--i:2">
+          <h3>Sistema da vítima</h3>
+          <div class="sess"><span id="csrfSess" class="statchip off">sessão: não logada</span></div>
+          <p class="mailrow">E-mail da conta<b id="csrfEmail" class="mail">—</b></p>
+          <button class="btn btn-green" id="csrfLogin"><span>1 · Entrar (criar a sessão)</span></button>
+          <h3>O que o servidor recebeu</h3>
+          <pre id="csrfLog" class="reqbox" role="status" aria-live="polite">Aguardando ação…</pre>
+        </div>
+        <div class="card fx" style="--i:3">
+          <h3 class="r">⚠ Versão vulnerável (GET, sem token)</h3>
+          <div class="prize" id="csrfPrize"><span>🎉 Você ganhou um prêmio! Carregando seu brinde…</span><div class="bar"><span></span></div></div>
+          <button class="btn btn-red" id="csrfAtk"><span>2 · A vítima abre o site malicioso</span></button>
+          <h3 class="g">✓ Versão segura (POST + token)</h3>
+          <div class="btns">
+            <button class="btn btn-red" id="csrfSegAtk"><span>3 · Atacante tenta (sem token)</span></button>
+            <button class="btn btn-green" id="csrfSegOk"><span>4 · Usuário legítimo (com token)</span></button>
+          </div>
+          <button class="chip" id="csrfAgain">↺ Recomeçar a demo</button>
+        </div>
       </div>
-      <div class="frames fx" style="--i:3">
-        <figure><figcaption class="r">⚠ GET sem token (vulnerável)</figcaption><iframe data-src="/csrf/conta-vulneravel.html" title="Conta vulnerável"></iframe></figure>
-        <figure><figcaption class="g">✓ POST + token CSRF (segura)</figcaption><iframe data-src="/csrf/conta-segura.html" title="Conta segura"></iframe></figure>
-      </div>
+      <iframe id="csrfSink" hidden title="Site malicioso (carregado em segundo plano pela demo)"></iframe>
     </section>
 
     <!-- 8 · FORÇA BRUTA -->
