@@ -243,17 +243,70 @@
       <p class="eyebrow fx" style="--i:0">7 · Exercício prático</p>
       <h2 class="fx" style="--i:1">Mini-auditoria: <span class="flow">quem acessou?</span></h2>
       <p class="sub fx" style="--i:2">Analise os registros fictícios. Separe evidência, hipótese e conclusão — um horário incomum, sozinho, não prova invasão.</p>
-      <div class="two wide">
-        <div class="card fx" style="--i:3"><h3>Registros</h3>
-          <p><b>09:14 · Ana Souza</b><br>Conta ativa · leitura</p>
-          <p><b>23:48 · Bruno Lima</b><br>Conta desligada · perfil admin</p>
-          <p><b>02:17 · Carla Melo</b><br>Conta ativa · perfil admin · fora do horário</p>
-          <p><b>10:05 · Diego Rocha</b><br>Conta ativa · perfil admin · contexto não informado</p>
-          <p><b>11:32 · Estagiário Web</b><br>Conta de estágio · perfil admin</p>
+      <div class="two wide audit-layout">
+        <div class="card fx audit-card" style="--i:3">
+          <div class="audit-heading"><h3>Registros</h3><span class="audit-count">5 eventos</span></div>
+          <div class="audit-legend" aria-label="Legenda dos níveis de atenção">
+            <span><i class="audit-dot audit-normal"></i> Normal aparente</span>
+            <span><i class="audit-dot audit-critical"></i> Alerta forte</span>
+            <span><i class="audit-dot audit-investigate"></i> Investigar</span>
+          </div>
+          <div class="audit-record audit-normal">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <div class="audit-record-copy">
+              <div class="audit-record-head"><b>09:14 · Ana Souza</b><span class="audit-pill">NORMAL APARENTE</span></div>
+              <p>Conta ativa · leitura</p>
+            </div>
+          </div>
+          <div class="audit-record audit-critical">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <div class="audit-record-copy">
+              <div class="audit-record-head"><b>23:48 · Bruno Lima</b><span class="audit-pill">ALERTA FORTE</span></div>
+              <p>Conta desligada · perfil admin</p>
+            </div>
+          </div>
+          <div class="audit-record audit-investigate">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <div class="audit-record-copy">
+              <div class="audit-record-head"><b>02:17 · Carla Melo</b><span class="audit-pill">INVESTIGAR</span></div>
+              <p>Conta ativa · admin · fora do horário</p>
+            </div>
+          </div>
+          <div class="audit-record audit-unknown">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <div class="audit-record-copy">
+              <div class="audit-record-head"><b>10:05 · Diego Rocha</b><span class="audit-pill">INCONCLUSIVO</span></div>
+              <p>Conta ativa · admin · sem contexto</p>
+            </div>
+          </div>
+          <div class="audit-record audit-privilege">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <div class="audit-record-copy">
+              <div class="audit-record-head"><b>11:32 · Estagiário Web</b><span class="audit-pill">REVER ACESSO</span></div>
+              <p>Conta de estágio · perfil admin</p>
+            </div>
+          </div>
         </div>
-        <div class="card fx" style="--i:4"><h3>Resposta esperada</h3>
-          <ul><li>Bruno: alerta forte; desativar conta, revogar sessões e verificar ações posteriores ao desligamento.</li><li>Carla: investigar escala, IP, MFA e recursos consultados antes de concluir.</li><li>Estagiário: validar a necessidade e aplicar o menor privilégio.</li><li>Diego: inconclusivo até confirmar função e autorização.</li></ul>
-          <p class="warn"><i data-lucide="shield-alert"></i> Preserve evidências e não acuse ninguém apenas pelo horário.</p>
+        <div class="card fx audit-card audit-response" style="--i:4">
+          <div class="audit-heading"><h3>Resposta esperada</h3><span class="audit-count">Ação sugerida</span></div>
+          <div class="audit-action audit-critical">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <p><b>Bruno — alerta forte.</b> Desativar conta, revogar sessões e verificar ações após o desligamento.</p>
+          </div>
+          <div class="audit-action audit-investigate">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <p><b>Carla — investigar.</b> Conferir escala, IP, MFA e recursos acessados antes de concluir.</p>
+          </div>
+          <div class="audit-action audit-privilege">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <p><b>Estagiário — revisar privilégios.</b> Confirmar necessidade e aplicar o menor privilégio.</p>
+          </div>
+          <div class="audit-action audit-unknown">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <p><b>Diego — inconclusivo.</b> Confirmar função e autorização para o acesso administrativo.</p>
+          </div>
+          <div class="audit-rule"><i data-lucide="shield-alert"></i><span>Preserve evidências. Não conclua que houve invasão só porque o horário é incomum.</span></div>
+          <div class="audit-footnote"><i class="audit-dot audit-normal"></i> Ana: nenhum indício evidente no registro; isso não garante que toda a atividade foi legítima.</div>
         </div>
       </div>
     </section>
