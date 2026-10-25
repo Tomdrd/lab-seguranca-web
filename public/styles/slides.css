@@ -262,3 +262,23 @@ html[data-theme="light"] body.deck {
   .audit-layout { grid-template-columns: 1fr; }
   .audit-record-head { align-items: flex-start; }
 }
+
+/* Cabeçalho da mini-auditoria: instrução e aviso lado a lado. */
+.audit-intro-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(18rem, .9fr);
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+.audit-intro-row .sub { max-width: none; }
+.audit-rule-inline {
+  margin: 0;
+  padding: .52rem .72rem;
+  gap: .55rem;
+  font-size: .76rem;
+}
+.audit-rule-inline svg { width: 1.2rem; height: 1.2rem; flex: 0 0 1.2rem; }
+@media (max-width: 900px) {
+  .audit-intro-row { grid-template-columns: minmax(0, 1fr); }
+}
