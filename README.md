@@ -6,12 +6,18 @@ Cada vulnerabilidade tem duas versões rodando lado a lado: uma **vulnerável** 
 
 ## Como rodar
 
+Requisitos: Node.js 20 ou superior e npm.
+
 ```bash
 npm install
-node server.js
+npm start
 ```
 
-Acesse: http://localhost:3000
+Acesse http://localhost:3000. O site auxiliar da demonstração CSRF usa a porta 3001; deixe-a disponível.
+
+Para executar os testes automatizados: `npm test`.
+
+> **Importante:** este é um laboratório didático, não um sistema pronto para produção. As rotas vulneráveis são intencionais. Execute somente localmente e nunca exponha as portas à internet.
 
 ## Demonstrações
 
