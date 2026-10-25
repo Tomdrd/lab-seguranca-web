@@ -242,7 +242,10 @@
       <span class="who b">Francisco</span>
       <p class="eyebrow fx" style="--i:0">7 · Exercício prático</p>
       <h2 class="fx" style="--i:1">Mini-auditoria: <span class="flow">quem acessou?</span></h2>
-      <p class="sub fx" style="--i:2">Analise os registros fictícios. Separe evidência, hipótese e conclusão — um horário incomum, sozinho, não prova invasão.</p>
+      <div class="audit-intro-row fx" style="--i:2">
+        <p class="sub">Analise os registros fictícios. Separe evidência, hipótese e conclusão.</p>
+        <div class="audit-rule audit-rule-inline"><i data-lucide="shield-alert"></i><span>Preserve evidências. Não conclua que houve invasão só porque o horário é incomum.</span></div>
+      </div>
       <div class="two wide audit-layout">
         <div class="card fx audit-card" style="--i:3">
           <div class="audit-heading"><h3>Registros</h3><span class="audit-count">5 eventos</span></div>
@@ -289,6 +292,10 @@
         </div>
         <div class="card fx audit-card audit-response" style="--i:4">
           <div class="audit-heading"><h3>Resposta esperada</h3><span class="audit-count">Ação sugerida</span></div>
+          <div class="audit-action audit-normal">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <p><b>Ana — normal aparente.</b> Nenhum indício evidente no registro; isso não garante que toda a atividade foi legítima.</p>
+          </div>
           <div class="audit-action audit-critical">
             <i class="audit-dot" aria-hidden="true"></i>
             <p><b>Bruno — alerta forte.</b> Desativar conta, revogar sessões e verificar ações após o desligamento.</p>
@@ -297,16 +304,14 @@
             <i class="audit-dot" aria-hidden="true"></i>
             <p><b>Carla — investigar.</b> Conferir escala, IP, MFA e recursos acessados antes de concluir.</p>
           </div>
-          <div class="audit-action audit-privilege">
-            <i class="audit-dot" aria-hidden="true"></i>
-            <p><b>Estagiário — revisar privilégios.</b> Confirmar necessidade e aplicar o menor privilégio.</p>
-          </div>
           <div class="audit-action audit-unknown">
             <i class="audit-dot" aria-hidden="true"></i>
             <p><b>Diego — inconclusivo.</b> Confirmar função e autorização para o acesso administrativo.</p>
           </div>
-          <div class="audit-rule"><i data-lucide="shield-alert"></i><span>Preserve evidências. Não conclua que houve invasão só porque o horário é incomum.</span></div>
-          <div class="audit-footnote"><i class="audit-dot audit-normal"></i> Ana: nenhum indício evidente no registro; isso não garante que toda a atividade foi legítima.</div>
+          <div class="audit-action audit-privilege">
+            <i class="audit-dot" aria-hidden="true"></i>
+            <p><b>Estagiário — revisar privilégios.</b> Confirmar necessidade e aplicar o menor privilégio.</p>
+          </div>
         </div>
       </div>
     </section>
