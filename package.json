@@ -1,12 +1,19 @@
 {
   "name": "lab-seguranca-web",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Laboratório educacional de Segurança Web e Pentest — Unidade 3",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "test": "node --test",
+    "test:security": "node --test test/security.test.js"
   },
-  "keywords": [],
+  "keywords": [
+    "seguranca-web",
+    "pentest",
+    "educacional",
+    "owasp"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
