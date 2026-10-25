@@ -37,7 +37,7 @@
       <span class="who a">Antonyelton</span>
       <p class="eyebrow fx" style="--i:0">Abertura</p>
       <h2 class="fx" style="--i:1">O que vamos <span class="flow">atacar</span> hoje</h2>
-      <p class="sub fx" style="--i:2">O OWASP Top 10 lista os riscos mais críticos em aplicações web. Hoje cobrimos cinco deles, ao vivo.</p>
+      <p class="sub fx" style="--i:2">OWASP ajuda a organizar riscos comuns de aplicações web. Hoje veremos cinco classes de falhas e suas defesas, ao vivo.</p>
       <div class="grid4">
         <div class="tile frag"><i data-lucide="database"></i><h3>Injeção</h3><p>SQL Injection · XSS</p></div>
         <div class="tile frag"><i data-lucide="key-round"></i><h3>Falhas de autenticação</h3><p>Força bruta</p></div>
@@ -237,7 +237,42 @@
       <p class="sub fx" style="--i:3">Segurança não é evento único: atualize dependências (<code>npm audit</code>), revise código e mantenha logs para auditoria.</p>
     </section>
 
-    <!-- 11 · FIM -->
+    <!-- 11 · MINI-AUDITORIA -->
+    <section class="slide" data-title="Mini-auditoria de acessos">
+      <span class="who b">Francisco</span>
+      <p class="eyebrow fx" style="--i:0">7 · Exercício prático</p>
+      <h2 class="fx" style="--i:1">Mini-auditoria: <span class="flow">quem acessou?</span></h2>
+      <p class="sub fx" style="--i:2">Analise os registros fictícios. Separe evidência, hipótese e conclusão — um horário incomum, sozinho, não prova invasão.</p>
+      <div class="two wide">
+        <div class="card fx" style="--i:3"><h3>Registros</h3>
+          <p><b>09:14 · Ana Souza</b><br>Conta ativa · leitura</p>
+          <p><b>23:48 · Bruno Lima</b><br>Conta desligada · perfil admin</p>
+          <p><b>02:17 · Carla Melo</b><br>Conta ativa · perfil admin · fora do horário</p>
+          <p><b>10:05 · Diego Rocha</b><br>Conta ativa · perfil admin · contexto não informado</p>
+          <p><b>11:32 · Estagiário Web</b><br>Conta de estágio · perfil admin</p>
+        </div>
+        <div class="card fx" style="--i:4"><h3>Resposta esperada</h3>
+          <ul><li>Bruno: alerta forte; desativar conta, revogar sessões e verificar ações posteriores ao desligamento.</li><li>Carla: investigar escala, IP, MFA e recursos consultados antes de concluir.</li><li>Estagiário: validar a necessidade e aplicar o menor privilégio.</li><li>Diego: inconclusivo até confirmar função e autorização.</li></ul>
+          <p class="warn"><i data-lucide="shield-alert"></i> Preserve evidências e não acuse ninguém apenas pelo horário.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 · DEFESA EM PROFUNDIDADE -->
+    <section class="slide" data-title="Defesas em profundidade">
+      <span class="who b">Francisco</span>
+      <p class="eyebrow fx" style="--i:0">8 · Da demo para a prática</p>
+      <h2 class="fx" style="--i:1">O que ainda falta <span class="flow">em produção</span></h2>
+      <div class="grid4">
+        <div class="tile frag"><i data-lucide="lock-keyhole"></i><h3>Segredos</h3><p>JWT_SECRET fora do código; senhas com Argon2id/bcrypt.</p></div>
+        <div class="tile frag"><i data-lucide="scroll-text"></i><h3>Logs</h3><p>Sem senhas, tokens ou dados sensíveis; registrar evento e resultado.</p></div>
+        <div class="tile frag"><i data-lucide="user-check"></i><h3>Autorização</h3><p>Validar perfil e permissão em cada recurso protegido.</p></div>
+        <div class="tile frag"><i data-lucide="activity"></i><h3>Operação</h3><p>Testes, dependências atualizadas, alertas, pentest e reteste.</p></div>
+      </div>
+      <p class="sub fx" style="--i:3">Uma defesa isolada não basta: combine validação, controles de acesso, configuração segura, monitoramento e revisão contínua.</p>
+    </section>
+
+    <!-- 13 · FIM -->
     <section class="slide" data-title="Encerramento">
       <span class="who b">Francisco</span>
       <p class="eyebrow fx" style="--i:0">Resumo</p>
