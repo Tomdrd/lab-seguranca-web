@@ -16,11 +16,20 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); }); // Express 5: sem corpo => undefined
 
-// Segredo do JWT: variável de ambiente; o valor fixo é só para a demo funcionar sem configuração
+// A chave fixa existe somente para a demo local. Em produção, falhe sem um segredo forte configurado.
+if (process.env.NODE_ENV === 'production' &&
+    (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32)) {
+  throw new Error('Em produção, JWT_SECRET deve ser configurado e ter pelo menos 32 caracteres.');
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'chave-secreta-apenas-para-demo-didatica';
 
 const textoValido = (v, max) => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
 const emailValido = (v) => textoValido(v, 120) && /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(v);
+const mascararEmail = (email) => {
+  if (typeof email !== 'string' || !email.includes('@')) return '[email inválido/ausente]';
+  const [usuario, dominio] = email.split('@');
+  return `${usuario.slice(0, 1)}***@${dominio}`;
+};
 
 // ---------- Banco de dados (SQL Injection) ----------
 // Senhas em texto puro SÓ porque é demo; em produção: hash lento com salt (bcrypt/Argon2)
@@ -45,7 +54,7 @@ const sessoesCSRF = new Map(); // sessionId -> { email, csrfToken }
 
 // ---------- Rotas com header especial (precisam vir antes do static) ----------
 app.get('/seguro-comentarios.html', (req, res) => {
-  res.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; object-src 'none'");
+  res.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
   res.sendFile(__dirname + '/views/seguro-comentarios.html');
 });
 
@@ -64,7 +73,7 @@ app.use(express.static(path.join(__dirname, 'public'))); // caminho absoluto: fu
 app.post('/vulneravel/login', (req, res) => {
   const { email, senha } = req.body;
   const query = `SELECT * FROM users WHERE email = '${email}' AND senha = '${senha}'`;
-  console.log('[VULNERÁVEL] Query executada:', query);
+  console.log('[VULNERÁVEL] Consulta concatenada executada; entrada omitida dos logs.');
   try {
     const user = db.prepare(query).get();
     if (user) return res.json({ ok: true, mensagem: `Bem-vindo, ${user.email} (${user.perfil})` });
@@ -78,7 +87,7 @@ app.post('/seguro/login', (req, res) => {
   const { email, senha } = req.body;
   if (!textoValido(email, 120) || !textoValido(senha, 120)) return res.status(400).json({ ok: false, mensagem: 'Dados inválidos' });
   const query = 'SELECT * FROM users WHERE email = ? AND senha = ?';
-  console.log('[SEGURO] Query executada:', query, '| parâmetros:', [email, senha]);
+  console.log('[SEGURO] Consulta parametrizada executada; credenciais omitidas dos logs.');
   const user = db.prepare(query).get(email, senha);
   if (user) return res.json({ ok: true, mensagem: `Bem-vindo, ${user.email} (${user.perfil})` });
   res.status(401).json({ ok: false, mensagem: 'Credenciais inválidas' });
@@ -94,17 +103,24 @@ app.post('/api/comentarios', (req, res) => {
   if (!textoValido(texto, 500)) return res.status(400).json({ ok: false, mensagem: 'Comentário inválido (texto de 1 a 500 caracteres)' });
   comentarios.push(texto);
   if (comentarios.length > 100) comentarios.shift();
-  console.log('[COMENTÁRIO] Novo comentário salvo:', texto);
+  console.log(`[COMENTÁRIO] Novo comentário salvo (${texto.length} caracteres); conteúdo omitido dos logs.`);
   res.json({ ok: true });
 });
 
 // ================= CSRF =================
 app.post('/csrf/login', (req, res) => {
-  const sessionId = crypto.randomBytes(16).toString('hex');
-  const csrfToken = crypto.randomBytes(16).toString('hex');
+  const sessionId = crypto.randomBytes(32).toString('hex');
+  const csrfToken = crypto.randomBytes(32).toString('hex');
   sessoesCSRF.set(sessionId, { email: 'tom@empresa.com', csrfToken });
-  res.cookie('sessaoCSRF', sessionId, { httpOnly: true });
-  console.log('[CSRF] Sessão criada para tom@empresa.com | token:', csrfToken);
+  // Cookie permissivo somente no modo local para tornar o ataque CSRF observável.
+  // Em produção, use HTTPS e configure Secure/HttpOnly/SameSite de acordo com o fluxo.
+  res.cookie('sessaoCSRF', sessionId, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'lax' : false,
+    path: '/',
+  });
+  console.log('[CSRF] Sessão de demonstração criada; identificador e token omitidos dos logs.');
   res.json({ ok: true });
 });
 
@@ -130,12 +146,12 @@ app.post('/seguro/trocar-email', (req, res) => {
   const esperado = Buffer.from(sessao.csrfToken);
   const tokenOk = recebido.length === esperado.length && crypto.timingSafeEqual(recebido, esperado);
   if (!tokenOk) {
-    console.log('[CSRF SEGURO] Tentativa BLOQUEADA — token ausente ou inválido. Recebido:', req.body.csrfToken);
+    console.log('[CSRF SEGURO] Tentativa bloqueada: token ausente ou inválido (valor omitido).');
     return res.status(403).json({ ok: false, mensagem: 'Bloqueado: token CSRF inválido' });
   }
   if (!emailValido(req.body.novoEmail)) return res.status(400).json({ ok: false, mensagem: 'E-mail inválido' });
   sessao.email = req.body.novoEmail;
-  console.log('[CSRF SEGURO] E-mail trocado com sucesso (token válido):', sessao.email);
+  console.log('[CSRF SEGURO] E-mail trocado com sucesso (token válido):', mascararEmail(sessao.email));
   res.json({ ok: true, mensagem: 'E-mail alterado para ' + sessao.email });
 });
 
@@ -144,7 +160,7 @@ app.post('/seguro/trocar-email', (req, res) => {
 app.post('/vulneravel-forca-bruta/login', (req, res) => {
   const { email, senha } = req.body;
   const user = db.prepare('SELECT * FROM users WHERE email = ? AND senha = ?').get(email, senha);
-  console.log(`[FORÇA BRUTA - VULNERÁVEL] Tentativa: ${email} / ${senha} -> ${user ? 'SUCESSO' : 'falhou'}`);
+  console.log(`[FORÇA BRUTA - VULNERÁVEL] Tentativa para ${mascararEmail(email)} -> ${user ? 'SUCESSO' : 'falhou'} (senha omitida).`);
   if (user) return res.json({ ok: true, mensagem: `Login OK: ${user.email}` });
   res.status(401).json({ ok: false, mensagem: 'Credenciais inválidas' });
 });
@@ -157,7 +173,7 @@ const limitadorLogin = rateLimit({
   legacyHeaders: false,
   message: { ok: false, mensagem: 'Muitas tentativas. Tente novamente em instantes.' },
   handler: (req, res, next, options) => {
-    console.log(`[FORÇA BRUTA - SEGURO] BLOQUEADO por excesso de tentativas: ${req.body?.email}`);
+    console.log(`[FORÇA BRUTA - SEGURO] Bloqueio por excesso de tentativas para ${mascararEmail(req.body?.email)}.`);
     res.status(options.statusCode).json(options.message);
   }
 });
@@ -167,7 +183,7 @@ app.post('/seguro-forca-bruta/login', limitadorLogin, (req, res) => {
   const { email, senha } = req.body;
   if (!textoValido(email, 120) || !textoValido(senha, 120)) return res.status(400).json({ ok: false, mensagem: 'Dados inválidos' });
   const user = db.prepare('SELECT * FROM users WHERE email = ? AND senha = ?').get(email, senha);
-  console.log(`[FORÇA BRUTA - SEGURO] Tentativa: ${email} / ${senha} -> ${user ? 'SUCESSO' : 'falhou'}`);
+  console.log(`[FORÇA BRUTA - SEGURO] Tentativa para ${mascararEmail(email)} -> ${user ? 'SUCESSO' : 'falhou'} (senha omitida).`);
   if (user) return res.json({ ok: true, mensagem: `Login OK: ${user.email}` });
   res.status(401).json({ ok: false, mensagem: 'Credenciais inválidas' });
 });
@@ -179,7 +195,7 @@ app.post('/api/jwt/login', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE email = ? AND senha = ?').get(email, senha);
   if (!user) return res.status(401).json({ ok: false, mensagem: 'Credenciais inválidas' });
   const token = jwt.sign({ email: user.email, perfil: user.perfil }, JWT_SECRET, { algorithm: 'HS256', expiresIn: '15m' });
-  console.log('[JWT] Token emitido para', user.email);
+  console.log('[JWT] Token emitido para', mascararEmail(user.email));
   res.json({ ok: true, token });
 });
 
@@ -187,7 +203,7 @@ function verificarToken(req, res, next) {
   const partes = /^Bearer (\S+)$/.exec(req.headers.authorization || ''); // exige o esquema "Bearer xxxxx"
   const token = partes && partes[1];
   if (!token) {
-    console.log('[JWT] Pedido SEM token recusado');
+    console.log('[JWT] Pedido sem token recusado');
     return res.status(401).json({ ok: false, mensagem: 'Token ausente' });
   }
   jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }, (err, payload) => { // algoritmo fixo: barra 'alg: none'
@@ -201,8 +217,16 @@ function verificarToken(req, res, next) {
 }
 
 app.get('/api/perfil', verificarToken, (req, res) => {
-  console.log('[JWT] Acesso autorizado a /api/perfil para', req.usuario.email);
+  console.log('[JWT] Acesso autorizado a /api/perfil para', mascararEmail(req.usuario.email));
   res.json({ ok: true, email: req.usuario.email, perfil: req.usuario.perfil });
+});
+
+// JWT válido autentica o usuário, mas cada recurso ainda deve aplicar autorização.
+app.get('/api/admin', verificarToken, (req, res) => {
+  if (req.usuario.perfil !== 'admin') {
+    return res.status(403).json({ ok: false, mensagem: 'Acesso negado: perfil insuficiente' });
+  }
+  res.json({ ok: true, mensagem: 'Acesso administrativo autorizado' });
 });
 
 // ================= RESET DAS DEMOS (só localhost) =================
