@@ -1,0 +1,6 @@
+evento_id,usuario,status_conta,horario,acao,perfil,contexto
+EV-001,Ana Souza,ativa,09:14,leitura,usuario,atividade habitual
+EV-002,Bruno Lima,desligada,23:48,acesso administrativo,admin,desligamento confirmado antes do evento
+EV-003,Carla Melo,ativa,02:17,acesso administrativo,admin,escala e autorização ainda não verificadas
+EV-004,Diego Rocha,ativa,10:05,acesso administrativo,admin,função e autorização não fornecidas
+EV-005,Estagiário Web,ativa,11:32,acesso administrativo,admin,descrição da função não prevê administração
