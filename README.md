@@ -53,6 +53,24 @@ Node.js, Express, better-sqlite3, cookie-parser, express-rate-limit, jsonwebtoke
 
 Laboratório educacional. Todas as "vulnerabilidades" são intencionais, isoladas em `localhost`, para fins de demonstração em sala de aula.
 
+## Checklist de segurança e limitações
+
+- **Credenciais:** senhas em texto puro e banco em memória são exclusivamente didáticos. Sistemas reais devem armazenar hashes lentos com salt, como Argon2id ou bcrypt.
+- **Logs:** não registre senhas, tokens, cookies nem consultas com credenciais. O laboratório omite segredos e mascara e-mails nos eventos de autenticação.
+- **JWT:** HS256 é fixado e os tokens expiram em 15 minutos. JWT é assinado, não criptografado; seu payload pode ser lido. Autenticação não substitui autorização. Em produção, configure `JWT_SECRET` forte (mínimo de 32 caracteres neste exemplo) fora do código; o servidor falha ao iniciar em modo `production` sem ele.
+- **CSRF:** o cookie é permissivo no modo local para tornar o ataque observável. Em produção, use HTTPS e configure `Secure`, `HttpOnly` e `SameSite=Lax` ou `Strict` conforme o fluxo, além de token anti-CSRF quando aplicável.
+- **Rate limit:** o limitador em memória e por IP é didático. Sistemas distribuídos precisam de armazenamento compartilhado e convém combinar controles por conta, MFA e monitoramento.
+- **XSS/CSP:** prefira `textContent` para dados não confiáveis, faça escape contextual ao inserir dados em HTML e trate CSP como defesa adicional, não como substituto da codificação segura.
+- **Pentest:** defina escopo e autorização por escrito, preserve evidências, avalie impacto, documente achados e reteste correções. Revise dependências e execute `npm audit`.
+
+## Mini-auditoria de acessos
+
+O arquivo `exercicios/mini-auditoria-acessos.csv` contém dados fictícios para classificar como **alerta**, **necessita investigação** ou **inconclusivo**. Justifique com evidências e o princípio do menor privilégio. Horário incomum, isoladamente, não prova ataque. Proponha contenção, investigação e prevenção.
+
+## Testes
+
+A suíte com `node:test` verifica SQL parametrizado, validação de comentários, token CSRF, autenticação/autorização JWT e bloqueio por excesso de tentativas. Execute `npm test`.
+
 ## Apresentação (slides)
 
 Com o servidor rodando, abra **http://localhost:3000/slides.html**.
