@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Laboratório de Segurança Web</title>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#172438"/>
+      <stop offset="1" stop-color="#070d18"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset=".55" stop-color="#0878d1"/>
+      <stop offset="1" stop-color="#1647a5"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#tile)"/>
+  <rect x="31" y="10" width="26" height="43" rx="5" fill="#25364d" stroke="#3c506d" stroke-width="1"/>
+  <circle cx="39" cy="22" r="2.4" fill="#22c55e"/>
+  <rect x="44" y="20.8" width="9" height="2.4" rx="1.2" fill="#8195b0"/>
+  <circle cx="39" cy="31" r="2.4" fill="#ef4444"/>
+  <rect x="44" y="29.8" width="9" height="2.4" rx="1.2" fill="#8195b0"/>
+  <circle cx="39" cy="40" r="2.4" fill="#fbbf24"/>
+  <rect x="44" y="38.8" width="9" height="2.4" rx="1.2" fill="#8195b0"/>
+  <path d="M27 8 46 15v16c0 12-8.5 20.5-19 26C15.5 51.5 7 43 7 31V15Z" fill="url(#shield)" stroke="#54c8ff" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M27 15 39 19.5v11c0 8-5 14.5-12 18.5-7-4-12-10.5-12-18.5v-11Z" fill="#0c3974" opacity=".72"/>
+  <path d="M21 29v-4.2a6 6 0 0 1 12 0V29" fill="none" stroke="#fff" stroke-width="3.1" stroke-linecap="round"/>
+  <rect x="17" y="27.5" width="20" height="15.5" rx="3.5" fill="#f8fafc"/>
+  <circle cx="27" cy="33.5" r="2.1" fill="#12315c"/>
+  <path d="M26 35h2l.8 3.5h-3.6Z" fill="#12315c"/>
+</svg>
