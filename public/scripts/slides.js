@@ -11,6 +11,8 @@
 
   /* ───────────── Navegação ───────────── */
   const slides = $$('.slide');
+  const auditPodcast = $('#auditPodcast');
+  const auditSlide = $('#auditSlide');
   let cur = -1;
   let token = 0; // invalida animações de um slide quando saímos dele
 
@@ -28,6 +30,7 @@
       s.classList.toggle('active', i === n);
       s.classList.toggle('past', i < n);
     });
+    auditPodcast.hidden = slides[n] !== auditSlide;
     const frags = $$('.frag', slides[n]);
     frags.forEach((f) => f.classList.toggle('shown', back)); // voltando: slide completo
     syncTimeline();
@@ -366,13 +369,54 @@
   }
   const fullscreen = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
 
+  const introVideoDialog = $('#introVideoDialog');
+  const introVideo = $('#introVideo');
+  function resetIntroVideo() {
+    introVideo.pause();
+    introVideo.currentTime = 0;
+  }
+  function closeIntroVideo() {
+    if (document.fullscreenElement === document.documentElement) {
+      document.exitFullscreen().catch((error) => {
+        console.error('Não foi possível sair da tela cheia do vídeo.', error);
+        toast('Não foi possível sair da tela cheia do vídeo.');
+      });
+    }
+    if (introVideoDialog.open) introVideoDialog.close();
+    resetIntroVideo();
+  }
+  $('#playIntroVideo').addEventListener('click', async () => {
+    if (typeof document.documentElement.requestFullscreen !== 'function') {
+      toast('Este navegador não oferece suporte à tela cheia.');
+      return;
+    }
+
+    introVideoDialog.showModal();
+    try {
+      await Promise.all([
+        document.documentElement.requestFullscreen(),
+        introVideo.play(),
+      ]);
+    } catch (error) {
+      console.error('Não foi possível iniciar o vídeo em tela cheia.', error);
+      closeIntroVideo();
+      toast('Não foi possível iniciar o vídeo em tela cheia.');
+    }
+  });
+  $('#closeIntroVideo').addEventListener('click', closeIntroVideo);
+  introVideo.addEventListener('ended', closeIntroVideo);
+  introVideoDialog.addEventListener('close', resetIntroVideo);
+  document.addEventListener('fullscreenchange', () => {
+    if (introVideoDialog.open && document.fullscreenElement !== document.documentElement) closeIntroVideo();
+  });
+
   $('#btnNext').addEventListener('click', next);
   $('#btnPrev').addEventListener('click', prev);
   $('#btnReset').addEventListener('click', resetDemos);
   $('#btnFull').addEventListener('click', fullscreen);
 
   function onKey(e) {
-    if (e.target.closest('input, textarea, select, [contenteditable]') || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.closest('input, textarea, select, [contenteditable], dialog') || e.ctrlKey || e.metaKey || e.altKey) return;
     const k = e.key;
     if (['ArrowRight', 'PageDown', ' '].includes(k)) { e.preventDefault(); next(); }
     else if (['ArrowLeft', 'PageUp'].includes(k)) { e.preventDefault(); prev(); }

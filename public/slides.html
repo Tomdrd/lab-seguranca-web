@@ -12,10 +12,16 @@
 
   <div class="progress"><span id="bar"></span></div>
 
-  <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema (T)">
-    <i data-lucide="moon" id="themeIcon"></i>
-    <span id="themeLabel">Claro</span>
-  </button>
+  <div class="slide-tools">
+    <audio class="podcast-player" id="auditPodcast" controls preload="none" aria-label="Podcast de análise do Francisco" hidden>
+      <source src="/podcast-analise.mp3" type="audio/mpeg">
+      Seu navegador não oferece suporte à reprodução de áudio.
+    </audio>
+    <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema (T)">
+      <i data-lucide="moon" id="themeIcon"></i>
+      <span id="themeLabel">Claro</span>
+    </button>
+  </div>
 
   <main id="deck">
 
@@ -29,9 +35,19 @@
           <div class="person a"><b>Antonyelton</b><span>SQL Injection · XSS</span></div>
           <div class="person b"><b>Francisco</b><span>CSRF · Força bruta · JWT · Pentest</span></div>
         </div>
-        <p class="keys fx" style="--i:4"><kbd>→</kbd> avançar &nbsp; <kbd>←</kbd> voltar &nbsp; <kbd>F</kbd> tela cheia &nbsp; <kbd>T</kbd> tema &nbsp; <kbd>R</kbd> reiniciar demos</p>
+        <button class="btn btn-green video-launch fx" id="playIntroVideo" style="--i:4" type="button">
+          <i data-lucide="play" aria-hidden="true"></i> Assistir vídeo de abertura
+        </button>
+        <p class="keys fx" style="--i:5"><kbd>→</kbd> avançar &nbsp; <kbd>←</kbd> voltar &nbsp; <kbd>F</kbd> tela cheia &nbsp; <kbd>T</kbd> tema &nbsp; <kbd>R</kbd> reiniciar demos</p>
       </div>
     </section>
+
+    <dialog class="video-dialog" id="introVideoDialog" aria-label="Vídeo de abertura">
+      <button class="video-close" id="closeIntroVideo" type="button" aria-label="Fechar vídeo">×</button>
+      <video id="introVideo" src="/video_seguranca_animado_v2.mp4" controls playsinline preload="metadata">
+        Seu navegador não oferece suporte à reprodução de vídeo.
+      </video>
+    </dialog>
 
     <!-- 2 · OWASP -->
     <section class="slide" data-title="OWASP">
@@ -239,7 +255,7 @@
     </section>
 
     <!-- 11 · MINI-AUDITORIA -->
-    <section class="slide" data-title="Mini-auditoria de acessos">
+    <section class="slide" id="auditSlide" data-title="Mini-auditoria de acessos">
       <span class="who b">Francisco</span>
       <p class="eyebrow fx" style="--i:0">7 · Exercício prático</p>
       <h2 class="fx" style="--i:1">Mini-auditoria: <span class="flow">quem acessou?</span></h2>
