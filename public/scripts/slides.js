@@ -11,8 +11,6 @@
 
   /* ───────────── Navegação ───────────── */
   const slides = $$('.slide');
-  const auditPodcast = $('#auditPodcast');
-  const auditSlide = $('#auditSlide');
   let cur = -1;
   let token = 0; // invalida animações de um slide quando saímos dele
 
@@ -30,7 +28,6 @@
       s.classList.toggle('active', i === n);
       s.classList.toggle('past', i < n);
     });
-    auditPodcast.hidden = slides[n] !== auditSlide;
     const frags = $$('.frag', slides[n]);
     frags.forEach((f) => f.classList.toggle('shown', back)); // voltando: slide completo
     syncTimeline();
@@ -127,39 +124,94 @@
   updateQuery();
 
   /* ───────────── XSS ao vivo ───────────── */
-  // Os dois painéis mostram a MESMA lista do servidor (/api/comentarios), como as páginas reais.
-  // Cada painel é uma "página da vítima" isolada (sandbox), então o script pode rodar sem afetar os slides.
+  // Cada painel é uma "página da vítima" isolada (sandbox), sem afetar os slides.
   let xssList = [];
+  let xssCurrent = '';
+  let xssPublished = false;
   const paginaVitima = (itens, csp) => `<!doctype html><html><head><meta charset="utf-8">${csp
-    ? '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; script-src \'none\'">' : ''}
+    ? '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; script-src \'self\'">' : ''}
 <style>body{margin:0;padding:.7rem;font:14px/1.5 'Courier New',monospace;background:#fff;color:#111}
 .c{border-left:3px solid #0369a1;background:#f1f5f9;padding:.4rem .6rem;margin:0 0 .4rem;border-radius:.3rem;overflow-wrap:anywhere}
 .e{color:#6b7280}</style></head><body>${itens || '<p class="e">Nenhum comentário ainda.</p>'}</body></html>`;
 
-  function renderXss(soSegura = false) {
-    const porEngano = $('#xssInner').checked;
-    // vulnerável: o comentário entra como HTML (innerHTML). segura: entra escapado (textContent).
-    const vul = xssList.map((c) => `<div class="c">${c}</div>`).join('');
-    const seg = xssList.map((c) => `<div class="c">${porEngano ? c : esc(c)}</div>`).join('');
-    if (!soSegura) $('#xssVul').srcdoc = paginaVitima(vul, false); // marcar a caixa não deve repetir o alerta da vulnerável
-    $('#xssSeg').srcdoc = paginaVitima(seg, true);
-    $('#xssSegTitle').textContent = porEngano ? '🛡 Só a CSP protege: innerHTML por engano' : '✓ Segura: textContent + CSP';
-    $('#xssSegCap').textContent = porEngano
-      ? 'O HTML foi interpretado (ícone de imagem quebrada), mas a CSP bloqueou o onerror: nenhum alerta.'
-      : 'O comentário aparece como texto puro. Nada é executado.';
+  function paginaSegura(comentarios) {
+    const doc = document.implementation.createHTMLDocument('');
+    const meta = doc.createElement('meta');
+    meta.httpEquiv = 'Content-Security-Policy';
+    meta.content = "default-src 'none'; style-src 'unsafe-inline'; script-src 'self'";
+    doc.head.append(meta);
+
+    const style = doc.createElement('style');
+    style.textContent = `body{margin:0;padding:.7rem;font:14px/1.5 'Courier New',monospace;background:#fff;color:#111}
+.c{border-left:3px solid #0369a1;background:#f1f5f9;padding:.4rem .6rem;margin:0 0 .4rem;border-radius:.3rem;overflow-wrap:anywhere}
+.e{color:#6b7280}`;
+    doc.head.append(style);
+
+    if (comentarios.length === 0) {
+      const empty = doc.createElement('p');
+      empty.className = 'e';
+      empty.textContent = 'Nenhum comentário ainda.';
+      doc.body.append(empty);
+    } else {
+      comentarios.forEach((comentario) => {
+        const item = doc.createElement('div');
+        item.className = 'c';
+        item.textContent = comentario;
+        doc.body.append(item);
+      });
+    }
+
+    return `<!doctype html>${doc.documentElement.outerHTML}`;
+  }
+
+  function renderXss(mode = 'initial') {
+    if (mode === 'vulnerable') {
+      $('#xssVul').srcdoc = paginaVitima(`<div class="c">${xssCurrent}</div>`, false);
+      $('#xssSeg').srcdoc = paginaSegura(xssList);
+      $('#xssSegTitle').textContent = '✓ Segura: textContent + CSP';
+      $('#xssSegCap').textContent = 'O comentário aparece como texto puro. Nada é executado.';
+      return;
+    }
+    if (mode === 'csp') {
+      $('#xssSeg').srcdoc = paginaVitima(`<div class="c">${xssCurrent}</div>`, true);
+      $('#xssSegTitle').textContent = '🛡 Teste com innerHTML + CSP';
+      $('#xssSegCap').textContent = 'Este painel recebeu o mesmo HTML sem escape. script-src \'self\' bloqueia o onerror inline; nenhum alerta deve aparecer.';
+      return;
+    }
+    if (!xssPublished) {
+      $('#xssVul').srcdoc = paginaVitima('<p class="e">Publique um comentário para iniciar a demonstração.</p>', false);
+    }
+    $('#xssSeg').srcdoc = paginaSegura(xssList);
+    $('#xssSegTitle').textContent = '✓ Segura: textContent + CSP';
+    $('#xssSegCap').textContent = 'O comentário é inserido com textContent e aparece como texto puro.';
+  }
+  async function fetchXssComments() {
+    const r = await fetch('/api/comentarios');
+    if (!r.ok) throw new Error('Falha ao carregar comentários');
+    const comments = await r.json();
+    if (!Array.isArray(comments)) throw new Error('Resposta inválida ao carregar comentários');
+    return comments;
   }
   async function xssLoad() {
-    try { xssList = await (await fetch('/api/comentarios')).json(); } catch { xssList = []; }
+    try { xssList = await fetchXssComments(); } catch { toast('Não foi possível carregar os comentários'); return; }
     renderXss();
   }
   $$('.chip[data-xss]').forEach((c) => c.addEventListener('click', () => { $('#xssText').value = c.dataset.xss; }));
-  $('#xssInner').addEventListener('change', () => renderXss(true));
   $('#xssPost').addEventListener('click', async () => {
     try {
-      const r = await post('/api/comentarios', { texto: $('#xssText').value });
+      const texto = $('#xssText').value;
+      const r = await post('/api/comentarios', { texto });
       if (!r.ok) { toast((await r.json()).mensagem || 'Comentário recusado'); return; }
-      await xssLoad();
+      xssCurrent = texto;
+      xssList = [...xssList, texto].slice(-100);
+      xssPublished = true;
+      $('#xssCsp').disabled = false;
+      renderXss('vulnerable');
     } catch { toast('Servidor indisponível'); }
+  });
+  $('#xssCsp').addEventListener('click', () => {
+    if (!xssPublished) return;
+    renderXss('csp');
   });
   $('#xssAgain').addEventListener('click', resetDemos);
 
@@ -361,6 +413,9 @@
       toast(r.ok ? 'Demos reiniciadas' : 'Não foi possível reiniciar');
     } catch { toast('Servidor indisponível'); }
     csrfReset();
+    xssCurrent = '';
+    xssPublished = false;
+    $('#xssCsp').disabled = true;
     await xssLoad();
     ['#bfVulList', '#bfSegList'].forEach((s) => { $(s).innerHTML = ''; });
     jwt = null; renderToken();

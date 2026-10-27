@@ -79,6 +79,9 @@ kbd { border: 1px solid var(--border-hover); border-radius: .3rem; padding: .05r
 .warn svg { width: 1.4rem; height: 1.4rem; flex: none; }
 .big { font-size: clamp(2rem, 6vw, 5rem); color: var(--accent); text-align: center; margin: auto 0 0; text-shadow: 0 0 2rem var(--accent); animation: pulse 2.4s ease-in-out infinite; }
 @keyframes pulse { 50% { text-shadow: 0 0 3rem var(--accent); } }
+.closing { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 1vh; }
+.closing .big { margin: 0; }
+.closing .sub { text-align: center; }
 
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw; }
 .two.wide { flex: 1; min-height: 0; }
@@ -125,8 +128,7 @@ kbd { border: 1px solid var(--border-hover); border-radius: .3rem; padding: .05r
 .xssform textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .btns.col { flex-direction: column; align-items: stretch; margin: 0; }
 .btns.col .btn { flex: none; }
-.card label.chk { display: inline-flex; align-items: center; gap: .5rem; margin: 0 0 0 .6rem; font-size: 1rem; letter-spacing: 0; text-transform: none; color: var(--muted); cursor: pointer; }
-.chk code { color: var(--yellow); }
+.btn:disabled { filter: grayscale(1); cursor: not-allowed; }
 .two.wide { grid-template-rows: minmax(0, 1fr); }
 .panelx { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: .9rem 1.2rem; }
 .panelx iframe { flex: 1; min-height: 4rem; width: 100%; border: 1px solid var(--border); border-radius: .6rem; background: #fff; pointer-events: none; }

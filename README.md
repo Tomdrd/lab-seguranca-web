@@ -75,8 +75,8 @@ A suíte com `node:test` verifica SQL parametrizado, validação de comentários
 
 Com o servidor rodando, abra **http://localhost:3000/slides.html**.
 
-- Navegação: `→` / `Espaço` avançam (revelando as etapas de cada slide), `←` volta, `Home`/`End`, `F` tela cheia, `T` tema, `R` reinicia as demos. Dá para abrir direto num slide com `#N` (ex.: `/slides.html#8`).
+- Navegação: `→` / `Espaço` avançam (revelando as etapas de cada slide), `←` volta, `Home`/`End`, `F` tela cheia, `T` tema, `R` reinicia as demos. Dá para abrir direto num slide com `#N` (ex.: `/slides.html#9`).
 - Todas as demos rodam dentro dos slides, em passos, chamando as mesmas rotas do laboratório (sem abrir abas):
-  - **XSS:** os comentários vão para as duas versões; a vulnerável renderiza num quadro isolado (sandbox) e a segura mostra o texto escapado. A caixa "innerHTML por engano" mostra a CSP bloqueando o `onerror`.
+  - **XSS:** a etapa 1 publica o comentário na versão vulnerável, isolada em sandbox; feche o alerta. A etapa 2 testa o mesmo HTML com `innerHTML` apenas no painel protegido por CSP, sem recarregar o painel vulnerável. O painel seguro padrão insere o comentário com `textContent` e também aplica CSP.
   - **CSRF:** o botão "A vítima abre o site malicioso" carrega o `ataque-evil.html` da porta 3001 num quadro invisível e o e-mail da conta muda sem nenhum clique. Se a 3001 estiver ocupada, a demo usa um plano B equivalente.
 - `POST /api/reset` (aceito só de localhost) limpa comentários, sessões e o limite de tentativas. É o que o botão e a tecla `R` usam entre um ensaio e a apresentação.
