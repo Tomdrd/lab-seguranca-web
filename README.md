@@ -80,3 +80,26 @@ Com o servidor rodando, abra **http://localhost:3000/slides.html**.
   - **XSS:** a etapa 1 publica o comentário na versão vulnerável, isolada em sandbox; feche o alerta. A etapa 2 testa o mesmo HTML com `innerHTML` apenas no painel protegido por CSP, sem recarregar o painel vulnerável. O painel seguro padrão insere o comentário com `textContent` e também aplica CSP.
   - **CSRF:** o botão "A vítima abre o site malicioso" carrega o `ataque-evil.html` da porta 3001 num quadro invisível e o e-mail da conta muda sem nenhum clique. Se a 3001 estiver ocupada, a demo usa um plano B equivalente.
 - `POST /api/reset` (aceito só de localhost) limpa comentários, sessões e o limite de tentativas. É o que o botão e a tecla `R` usam entre um ensaio e a apresentação.
+
+## Referências e leituras recomendadas
+
+Referências organizadas em formato próximo ao padrão ABNT. Acesso em: 27 out. 2026.
+
+### Vulnerabilidades e prevenção
+
+1. OWASP FOUNDATION. [SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html).
+2. OWASP FOUNDATION. [Cross Site Scripting Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html).
+3. OWASP FOUNDATION. [Cross-Site Request Forgery Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Request_Forgery_Prevention_Cheat_Sheet.html).
+4. OWASP FOUNDATION. [Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html).
+5. OWASP FOUNDATION. [Web Security Testing Guide](https://owasp.org/www-project-web-security-testing-guide/).
+
+### Proteções do navegador, GitHub e Vercel
+
+6. MOZILLA DEVELOPER NETWORK (MDN). [Utilizando Políticas de Segurança de Conteúdo (CSP)](https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Guides/CSP).
+7. GITHUB. [GitHub Actions documentation](https://docs.github.com/en/actions).
+8. VERCEL. [Web Application Firewall](https://vercel.com/security/web-application-firewall).
+9. VERCEL. [WAF Managed Rulesets](https://vercel.com/docs/vercel-firewall/vercel-waf/managed-rulesets).
+
+### Referência do projeto prático
+
+10. TOMDRD. Lab Segurança Web. GitHub. Disponível em: [https://github.com/Tomdrd/lab-seguranca-web](https://github.com/Tomdrd/lab-seguranca-web). Acesso em: 27 out. 2026.

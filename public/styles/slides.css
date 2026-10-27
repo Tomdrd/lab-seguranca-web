@@ -57,6 +57,19 @@ kbd { border: 1px solid var(--border-hover); border-radius: .3rem; padding: .05r
 .person.a { border-color: var(--accent); } .person.b { border-color: var(--accent2); }
 .person b { font-size: 1.5rem; color: var(--text-strong); }
 .person span { color: var(--muted); }
+.reference-content { margin: auto 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2vh; }
+.repo-link { max-width: 100%; box-sizing: border-box; flex-direction: row; flex-wrap: wrap; align-items: center; gap: .7rem; font-size: 1.1rem; text-decoration: none; }
+.repo-link svg { width: 1.3rem; height: 1.3rem; }
+.repo-link code { max-width: 100%; font-size: .95rem; overflow-wrap: anywhere; }
+.reference-slide { overflow-y: auto; }
+.reference-slide .reference-content { margin: 0; gap: 1rem; }
+.reference-list { margin: 0; padding-left: 1.5rem; color: var(--text); font-size: .76rem; line-height: 1.45; }
+.reference-list li { padding-left: .25rem; overflow-wrap: anywhere; }
+.reference-list li + li { margin-top: .5rem; }
+.reference-list a, .reference-document a { color: var(--accent); overflow-wrap: anywhere; }
+.reference-document { max-width: 48rem; }
+.reference-document { gap: .4rem; }
+.reference-document svg { width: 1.4rem; height: 1.4rem; color: var(--accent); }
 .keys { color: var(--muted); font-size: 1rem; margin: 0; }
 .video-launch { align-self: flex-start; flex-direction: row; align-items: center; gap: .55rem; font-size: 1rem; }
 .video-launch svg { width: 1.2rem; height: 1.2rem; }
